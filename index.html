@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050816">
+<title>IntelliLink X1</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050816;color:#edf4ff;font-family:system-ui,sans-serif}
+.app{max-width:520px;margin:auto;padding:14px}.card{background:#0c1224;border:1px solid #1d2945;border-radius:18px;padding:16px;margin-bottom:12px}
+header{display:flex;justify-content:space-between;align-items:center}.logo{font-size:20px;font-weight:800}.logo span{color:#00d4ff}
+.muted{color:#8291ad;font-size:11px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.metric{background:#080e1c;border:1px solid #17223a;border-radius:12px;padding:12px}.metric small{display:block;color:#8291ad;font-size:10px;text-transform:uppercase}.metric b{display:block;font-size:23px;margin-top:4px}
+.status{font-size:34px;font-weight:850}.decision{border-left:3px solid #00d4ff;background:#091326;padding:13px;border-radius:10px}
+button{width:100%;padding:14px;border:0;border-radius:12px;background:linear-gradient(135deg,#00bfe8,#744cff);color:white;font-weight:800}
+pre{white-space:pre-wrap;word-break:break-word;font-size:9px;max-height:220px;overflow:auto;color:#9fb0cb}.title{font-size:11px;color:#8291ad;text-transform:uppercase;margin-bottom:12px}
+</style></head>
+<body><div class="app">
+<header class="card"><div class="logo">🧠 Intelli<span>Link</span> X1</div><div class="muted">REAL • V1.0</div></header>
+<div class="card"><div class="status" id="status">CONNECTING</div><div class="muted" id="quality">Waiting...</div></div>
+<div class="card"><div class="title">Network Intelligence</div><div class="grid">
+<div class="metric"><small>Health Score</small><b id="health">--</b></div>
+<div class="metric"><small>Latency</small><b id="latency">--</b></div>
+<div class="metric"><small>Jitter</small><b id="jitter">--</b></div>
+<div class="metric"><small>Probe Loss</small><b id="loss">--</b></div>
+<div class="metric"><small>Successful</small><b id="success">--</b></div>
+<div class="metric"><small>Confidence</small><b id="confidence">--</b></div>
+</div></div>
+<div class="card"><div class="title">IntelliLink Decision</div><div class="decision">
+<b id="action">WAITING...</b><p id="recommendation">Running...</p><div class="muted" id="priority">Priority: --</div></div></div>
+<div class="card"><div class="title">Latency Range</div><div class="grid">
+<div class="metric"><small>Minimum</small><b id="min">--</b></div><div class="metric"><small>Maximum</small><b id="max">--</b></div>
+</div></div>
+<div class="card"><button id="btn" onclick="runTest()">▶ RUN NETWORK TEST</button></div>
+<div class="card"><div class="title">Raw Engine Data</div><pre id="raw">Waiting...</pre></div>
+<div class="muted" style="text-align:center;padding:10px">Network Engine • Health Engine • Decision Engine</div>
+</div>
+<script>
+const $=x=>document.getElementById(x);
+function render(d){let n=d.network,h=d.health,x=d.decision;
+$("status").textContent=d.status;$("quality").textContent=n.quality+" • "+n.confidence+" CONFIDENCE";
+$("health").textContent=h.score+"/100";$("latency").textContent=n.latency_avg_ms+" ms";
+$("jitter").textContent=n.jitter_ms+" ms";$("loss").textContent=n.probe_loss_percent+" %";
+$("success").textContent=n.successful_probes+" / "+n.probes;$("confidence").textContent=n.confidence;
+$("action").textContent=x.action;$("recommendation").textContent=x.recommendation;
+$("priority").textContent="Priority: "+x.priority;$("min").textContent=n.latency_min_ms+" ms";
+$("max").textContent=n.latency_max_ms+" ms";$("raw").textContent=JSON.stringify(d,null,2)}
+async function runTest(){let b=$("btn");b.disabled=true;b.textContent="⏳ MEASURING...";
+try{let r=await fetch("/api/test",{cache:"no-store"}),d=await r.json();if(!r.ok||d.status==="ERROR")throw Error(d.error||"API error");render(d)}
+catch(e){$("status").textContent="ERROR";$("quality").textContent=e.message}
+finally{b.disabled=false;b.textContent="▶ RUN NETWORK TEST"}}
+runTest();setInterval(async()=>{try{let r=await fetch("/api/health",{cache:"no-store"});if(r.ok)render(await r.json())}catch(e){}},15000);
+</script></body></html>
