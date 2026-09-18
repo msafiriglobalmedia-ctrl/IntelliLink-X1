@@ -1,5 +1,5 @@
-fastapi==0.115.0
-uvicorn[standard]==0.30.6
-psutil==6.0.0
-speedtest-cli==2.1.3
-pydantic==2.9.2
+fastapi
+uvicorn[standard]
+psutil
+speedtest-cli
+pydantic>=2.13.0
