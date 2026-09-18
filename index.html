@@ -1,53 +1,794 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="sw">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#050816">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>IntelliLink X1</title>
+
+<!-- Google Fonts: Orbitron (heading) + Space Grotesk (subtitle + body) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+
 <style>
-*{box-sizing:border-box}body{margin:0;background:#050816;color:#edf4ff;font-family:system-ui,sans-serif}
-.app{max-width:520px;margin:auto;padding:14px}.card{background:#0c1224;border:1px solid #1d2945;border-radius:18px;padding:16px;margin-bottom:12px}
-header{display:flex;justify-content:space-between;align-items:center}.logo{font-size:20px;font-weight:800}.logo span{color:#00d4ff}
-.muted{color:#8291ad;font-size:11px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.metric{background:#080e1c;border:1px solid #17223a;border-radius:12px;padding:12px}.metric small{display:block;color:#8291ad;font-size:10px;text-transform:uppercase}.metric b{display:block;font-size:23px;margin-top:4px}
-.status{font-size:34px;font-weight:850}.decision{border-left:3px solid #00d4ff;background:#091326;padding:13px;border-radius:10px}
-button{width:100%;padding:14px;border:0;border-radius:12px;background:linear-gradient(135deg,#00bfe8,#744cff);color:white;font-weight:800}
-pre{white-space:pre-wrap;word-break:break-word;font-size:9px;max-height:220px;overflow:auto;color:#9fb0cb}.title{font-size:11px;color:#8291ad;text-transform:uppercase;margin-bottom:12px}
-</style></head>
-<body><div class="app">
-<header class="card"><div class="logo">🧠 Intelli<span>Link</span> X1</div><div class="muted">REAL • V1.0</div></header>
-<div class="card"><div class="status" id="status">CONNECTING</div><div class="muted" id="quality">Waiting...</div></div>
-<div class="card"><div class="title">Network Intelligence</div><div class="grid">
-<div class="metric"><small>Health Score</small><b id="health">--</b></div>
-<div class="metric"><small>Latency</small><b id="latency">--</b></div>
-<div class="metric"><small>Jitter</small><b id="jitter">--</b></div>
-<div class="metric"><small>Probe Loss</small><b id="loss">--</b></div>
-<div class="metric"><small>Successful</small><b id="success">--</b></div>
-<div class="metric"><small>Confidence</small><b id="confidence">--</b></div>
-</div></div>
-<div class="card"><div class="title">IntelliLink Decision</div><div class="decision">
-<b id="action">WAITING...</b><p id="recommendation">Running...</p><div class="muted" id="priority">Priority: --</div></div></div>
-<div class="card"><div class="title">Latency Range</div><div class="grid">
-<div class="metric"><small>Minimum</small><b id="min">--</b></div><div class="metric"><small>Maximum</small><b id="max">--</b></div>
-</div></div>
-<div class="card"><button id="btn" onclick="runTest()">▶ RUN NETWORK TEST</button></div>
-<div class="card"><div class="title">Raw Engine Data</div><pre id="raw">Waiting...</pre></div>
-<div class="muted" style="text-align:center;padding:10px">Network Engine • Health Engine • Decision Engine</div>
+  :root{
+    --bg:#0a0e1a; --card:rgba(20,28,48,.75);
+    --line:rgba(90,140,255,.18);
+    --txt:#e6ecff; --mut:#8b9bc4;
+    --acc:#4ea1ff; --acc2:#7c5cff;
+    --ok:#20e3a0; --warn:#ffb02e; --bad:#ff4d6d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{overflow-x:hidden}
+  body{
+    font-family:'Space Grotesk','Segoe UI',system-ui,-apple-system,sans-serif;
+    background:radial-gradient(1200px 800px at 20% 0%,#132048 0%,var(--bg) 55%),
+               radial-gradient(900px 700px at 100% 100%,#1c1440 0%,transparent 60%);
+    color:var(--txt); min-height:100vh; padding:24px;
+    opacity:0; transition:opacity .9s ease;
+  }
+  body.ready{opacity:1}
+  .wrap{max-width:1280px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;
+         margin-bottom:22px;flex-wrap:wrap;gap:12px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:46px;height:46px;border-radius:14px;
+        background:linear-gradient(135deg,var(--acc),var(--acc2));
+        display:grid;place-items:center;font-weight:800;font-size:20px;
+        box-shadow:0 8px 24px rgba(78,161,255,.35)}
+  h1{font-family:'Orbitron',sans-serif;font-size:20px;letter-spacing:1px}
+  h1 span{background:linear-gradient(90deg,var(--acc),var(--acc2));
+          -webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--mut);font-size:12px;margin-top:2px;
+       font-style:italic;letter-spacing:2px}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;
+        border-radius:999px;font-size:12px;font-weight:600;
+        background:rgba(78,161,255,.12);border:1px solid var(--line);
+        color:var(--acc)}
+  .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);
+             box-shadow:0 0 8px var(--ok);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  .grid{display:grid;gap:16px}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  .cols-2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:900px){.cols-3,.cols-2{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
+        padding:18px;backdrop-filter:blur(12px);
+        box-shadow:0 8px 30px rgba(0,0,0,.35)}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:1.4px;
+           color:var(--mut);margin-bottom:14px;font-weight:600}
+
+  .score-box{display:flex;align-items:center;gap:20px}
+  .ring{position:relative;width:150px;height:150px;flex:none}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .bg{stroke:rgba(255,255,255,.06);stroke-width:12;fill:none}
+  .ring .fg{stroke:url(#g1);stroke-width:12;fill:none;
+            stroke-linecap:round;transition:stroke-dasharray .6s}
+  .ring .val{position:absolute;inset:0;display:grid;place-items:center;
+             flex-direction:column;font-size:30px;font-weight:800;
+             font-family:'Orbitron',sans-serif}
+  .ring .val small{display:block;font-size:11px;color:var(--mut);
+                   letter-spacing:1px;margin-top:-4px;font-weight:500}
+  .grade{font-size:15px;font-weight:700;margin-bottom:6px}
+  .genbadge{display:inline-block;padding:4px 10px;border-radius:8px;
+            background:linear-gradient(135deg,var(--acc),var(--acc2));
+            font-size:12px;font-weight:700;margin-top:6px;
+            font-family:'Orbitron',sans-serif}
+  .bars{display:flex;gap:3px;margin-top:10px}
+  .bars i{width:6px;background:rgba(255,255,255,.12);border-radius:2px;
+          display:inline-block}
+  .bars i.on{background:linear-gradient(180deg,var(--acc),var(--acc2))}
+
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:700px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  .tile{background:rgba(255,255,255,.03);border:1px solid var(--line);
+        border-radius:14px;padding:14px}
+  .tile .lbl{font-size:10.5px;color:var(--mut);text-transform:uppercase;
+             letter-spacing:1px}
+  .tile .num{font-size:22px;font-weight:800;margin-top:6px;
+             font-family:'Orbitron',sans-serif}
+  .tile .unit{font-size:11px;color:var(--mut);font-weight:500;margin-left:3px}
+
+  canvas{width:100%;height:180px;display:block}
+
+  .pred-row{display:flex;justify-content:space-between;align-items:center;
+            padding:10px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .pred-row:last-child{border-bottom:none}
+  .arrow{font-weight:800}
+  .arrow.up{color:var(--ok)} .arrow.down{color:var(--bad)}
+
+  .log{font-size:12px;max-height:200px;overflow:auto}
+  .log-item{padding:8px 10px;border-radius:10px;margin-bottom:6px;
+            background:rgba(255,255,255,.03);border-left:3px solid var(--acc)}
+  .log-item.warn{border-left-color:var(--warn)}
+  .log-item.error{border-left-color:var(--bad)}
+  .log-item.ok{border-left-color:var(--ok)}
+  .log-item .ts{color:var(--mut);font-size:10.5px;display:block}
+
+  button{cursor:pointer;font-family:inherit;font-weight:600;font-size:12.5px;
+         border:none;border-radius:10px;padding:9px 14px;
+         background:linear-gradient(135deg,var(--acc),var(--acc2));
+         color:#fff;transition:transform .15s,filter .15s}
+  button:hover{transform:translateY(-1px);filter:brightness(1.1)}
+  button.ghost{background:rgba(255,255,255,.06);border:1px solid var(--line);
+               color:var(--txt)}
+  button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  input,select{font-family:inherit;font-size:13px;padding:10px 12px;
+               border-radius:10px;border:1px solid var(--line);
+               background:rgba(255,255,255,.04);color:var(--txt);outline:none;
+               width:100%}
+  input:focus,select:focus{border-color:var(--acc)}
+  .row{display:flex;gap:8px;align-items:center}
+  .mt{margin-top:10px}
+
+  .switch{position:relative;display:inline-block;width:44px;height:24px}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;inset:0;background:rgba(255,255,255,.15);
+          border-radius:24px;transition:.25s}
+  .slider:before{content:"";position:absolute;height:18px;width:18px;
+    left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
+  input:checked + .slider{background:linear-gradient(135deg,var(--acc),var(--acc2))}
+  input:checked + .slider:before{transform:translateX(20px)}
+
+  .threat{padding:12px;border-radius:12px;margin-top:10px;font-size:13px;
+          background:rgba(255,255,255,.04);border:1px solid var(--line)}
+  .threat.HIGH{border-color:rgba(255,77,109,.5);background:rgba(255,77,109,.08)}
+  .threat.MEDIUM{border-color:rgba(255,176,46,.5);background:rgba(255,176,46,.08)}
+  .threat.LOW{border-color:rgba(32,227,160,.4);background:rgba(32,227,160,.07)}
+  .threat b{font-size:14px}
+  .threat ul{margin-top:6px;padding-left:18px;color:var(--mut)}
+  .threat li{margin:2px 0}
+
+  .alloc{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+  .alloc > div{background:rgba(255,255,255,.03);border:1px solid var(--line);
+               border-radius:10px;padding:10px;text-align:center}
+  .alloc .a-lbl{font-size:10.5px;color:var(--mut);text-transform:uppercase;
+                letter-spacing:1px}
+  .alloc .a-val{font-size:18px;font-weight:800;margin-top:4px;
+                font-family:'Orbitron',sans-serif}
+
+  /* =========================================================
+     ✨ SPLASH SCREEN — INTELLILINK X1
+     ========================================================= */
+  #splash{
+    position:fixed; inset:0; z-index:9999;
+    background:radial-gradient(circle at 50% 45%, #0c1836 0%, #05070f 65%);
+    display:grid; place-items:center;
+    overflow:hidden;
+    transition:opacity .9s cubic-bezier(.4,0,.2,1),
+               visibility .9s, filter .9s;
+  }
+  #splash.hide{
+    opacity:0; visibility:hidden;
+    filter:blur(20px);
+    pointer-events:none;
+  }
+
+  /* Aurora / blue shining background */
+  .splash-bg{
+    position:absolute; inset:-25%;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(78,161,255,.45), transparent 42%),
+      radial-gradient(circle at 70% 60%, rgba(124,92,255,.42), transparent 42%),
+      radial-gradient(circle at 50% 80%, rgba(0,220,255,.30), transparent 50%);
+    filter:blur(60px);
+    animation:bgPulse 5s ease-in-out infinite;
+  }
+  @keyframes bgPulse{
+    0%,100%{ transform:scale(1) rotate(0deg); opacity:.85; }
+    50%    { transform:scale(1.15) rotate(8deg); opacity:1; }
+  }
+
+  /* Shine sweep across the screen */
+  .splash-shine{
+    position:absolute; inset:-40% -40%;
+    background:linear-gradient(115deg,
+      transparent 40%,
+      rgba(120,190,255,.16) 48%,
+      rgba(200,230,255,.28) 50%,
+      rgba(120,190,255,.16) 52%,
+      transparent 60%);
+    animation:sweep 3.5s ease-in-out infinite;
+    mix-blend-mode:screen;
+  }
+  @keyframes sweep{
+    0%   { transform:translateX(-60%) }
+    100% { transform:translateX(60%)  }
+  }
+
+  /* Particles / floating dots */
+  .splash-particles span{
+    position:absolute; width:3px; height:3px; border-radius:50%;
+    background:#7cbcff; box-shadow:0 0 8px #4ea1ff;
+    opacity:0; animation:float 6s linear infinite;
+  }
+  @keyframes float{
+    0%   { transform:translateY(0) scale(.5); opacity:0; }
+    20%  { opacity:.9; }
+    100% { transform:translateY(-120px) scale(1); opacity:0; }
+  }
+
+  /* Content stack */
+  .splash-content{
+    position:relative; z-index:2;
+    display:flex; flex-direction:column; align-items:center;
+    text-align:center; padding:0 20px;
+  }
+
+  /* Logo SVG */
+  .logo-wrap{
+    width:220px; height:220px;
+    display:grid; place-items:center;
+    position:relative;
+    animation:logoIn 1.4s cubic-bezier(.2,.9,.25,1.05) both;
+  }
+  @keyframes logoIn{
+    0%  { transform:scale(.15) rotate(-120deg); opacity:0; filter:blur(8px); }
+    55% { transform:scale(1.12) rotate(15deg);  opacity:1; filter:blur(0); }
+    100%{ transform:scale(1) rotate(0deg);      opacity:1; filter:blur(0); }
+  }
+  .logo-svg{
+    width:100%; height:100%;
+    filter:drop-shadow(0 0 26px rgba(78,161,255,.55))
+           drop-shadow(0 0 60px rgba(124,92,255,.35));
+  }
+  .glow-pulse{ transform-origin:100px 100px;
+    animation:glowPulse 3s ease-in-out infinite; }
+  @keyframes glowPulse{
+    0%,100%{ transform:scale(1);   opacity:.55 }
+    50%    { transform:scale(1.18); opacity:.9  }
+  }
+  .ring-outer{ transform-origin:100px 100px;
+    animation:spin 22s linear infinite; }
+  .ring-mid  { transform-origin:100px 100px;
+    animation:spinR 15s linear infinite; }
+  .ring-inner{ transform-origin:100px 100px;
+    animation:spin 30s linear infinite reverse; opacity:.9 }
+  @keyframes spin { to { transform:rotate(360deg) } }
+  @keyframes spinR{ to { transform:rotate(-360deg) } }
+
+  .bolt{
+    transform-origin:100px 100px;
+    animation:boltPulse 1.9s ease-in-out infinite;
+    filter:drop-shadow(0 0 8px #4ea1ff);
+  }
+  @keyframes boltPulse{
+    0%,100%{ transform:scale(1);   filter:drop-shadow(0 0 6px #4ea1ff) }
+    50%    { transform:scale(1.08);filter:drop-shadow(0 0 22px #7c5cff) }
+  }
+
+  .node{ animation:nodePulse 2.4s ease-in-out infinite; }
+  .n1{ animation-delay:0s }
+  .n2{ animation-delay:.6s }
+  .n3{ animation-delay:1.2s }
+  .n4{ animation-delay:1.8s }
+  @keyframes nodePulse{
+    0%,100%{ opacity:.4; r:3 }
+    50%    { opacity:1;  r:5 }
+  }
+
+  /* Heading */
+  .splash-title{
+    font-family:'Orbitron',sans-serif;
+    font-weight:900;
+    font-size:clamp(34px, 6vw, 58px);
+    letter-spacing:4px;
+    margin-top:28px;
+    background:linear-gradient(90deg,
+      #4ea1ff 0%, #7c5cff 25%, #b8d9ff 50%, #7c5cff 75%, #4ea1ff 100%);
+    background-size:200% auto;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    filter:drop-shadow(0 0 20px rgba(78,161,255,.45));
+    opacity:0;
+    animation:
+      fadeUp .9s ease 1.15s forwards,
+      shine 3.2s linear 1.15s infinite;
+  }
+  .splash-title .x1{
+    -webkit-text-fill-color:#fff;
+    color:#fff;
+    margin-left:6px;
+  }
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(24px) }
+    to  { opacity:1; transform:translateY(0)    }
+  }
+  @keyframes shine{
+    to{ background-position:200% center }
+  }
+
+  /* Subtitle / tagline */
+  .splash-tag{
+    font-family:'Space Grotesk',sans-serif;
+    font-style:italic;
+    font-weight:300;
+    font-size:clamp(13px, 1.6vw, 18px);
+    letter-spacing:6px;
+    text-transform:lowercase;
+    color:#9fb4dd;
+    margin-top:14px;
+    opacity:0;
+    animation:fadeUp .9s ease 1.6s forwards;
+  }
+  .splash-tag::before,
+  .splash-tag::after{
+    content:""; display:inline-block; vertical-align:middle;
+    width:34px; height:1px; margin:0 14px;
+    background:linear-gradient(90deg, transparent, #4ea1ff, transparent);
+    opacity:.7;
+  }
+
+  /* Fade-out timing: holela inaisha ~5s */
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     ✨ INTELLILINK X1 — SPLASH SCREEN
+     ============================================================ -->
+<div id="splash" aria-hidden="true">
+  <div class="splash-bg"></div>
+  <div class="splash-shine"></div>
+  <div class="splash-particles" id="particles"></div>
+
+  <div class="splash-content">
+    <div class="logo-wrap">
+      <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#4ea1ff"/>
+            <stop offset="50%"  stop-color="#7c5cff"/>
+            <stop offset="100%" stop-color="#00d0ff"/>
+          </linearGradient>
+          <radialGradient id="glow">
+            <stop offset="0%"   stop-color="#4ea1ff" stop-opacity="0.55"/>
+            <stop offset="60%"  stop-color="#7c5cff" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="#4ea1ff" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Soft glow -->
+        <circle class="glow-pulse" cx="100" cy="100" r="92" fill="url(#glow)"/>
+
+        <!-- Outer dashed ring -->
+        <circle class="ring-outer" cx="100" cy="100" r="82"
+                fill="none" stroke="url(#lg1)" stroke-width="1.6"
+                stroke-dasharray="4 10" stroke-linecap="round"/>
+
+        <!-- Middle dashed ring -->
+        <circle class="ring-mid" cx="100" cy="100" r="62"
+                fill="none" stroke="url(#lg1)" stroke-width="1.2"
+                stroke-dasharray="24 12" opacity=".8"/>
+
+        <!-- Inner solid ring -->
+        <circle class="ring-inner" cx="100" cy="100" r="44"
+                fill="none" stroke="#4ea1ff" stroke-width="2.2"
+                stroke-dasharray="30 12" opacity=".85"/>
+
+        <!-- Lightning bolt -->
+        <path class="bolt"
+              d="M108 62 L82 108 L100 108 L90 142 L122 92 L104 92 Z"
+              fill="url(#lg1)"/>
+
+        <!-- Orbiting nodes -->
+        <circle class="node n1" cx="100" cy="18"  r="4" fill="#4ea1ff"/>
+        <circle class="node n2" cx="182" cy="100" r="4" fill="#7c5cff"/>
+        <circle class="node n3" cx="100" cy="182" r="4" fill="#00d0ff"/>
+        <circle class="node n4" cx="18"  cy="100" r="4" fill="#7c5cff"/>
+      </svg>
+    </div>
+
+    <h1 class="splash-title">IntelliLink<span class="x1">X1</span></h1>
+    <p class="splash-tag">future thinks before you do</p>
+  </div>
 </div>
+
+<!-- ============================================================ -->
+<div class="wrap" id="appRoot">
+
+  <header>
+    <div class="brand">
+      <div class="logo">⚡</div>
+      <div>
+        <h1><span>INTELLILINK</span> X1</h1>
+        <div class="sub">future thinks before you do</div>
+      </div>
+    </div>
+    <div class="pill"><span class="dot"></span><span id="liveStatus">LIVE</span></div>
+  </header>
+
+  <div class="grid cols-3" style="margin-bottom:16px">
+    <div class="card" style="grid-column:span 1">
+      <h2>Network Health Score</h2>
+      <div class="score-box">
+        <div class="ring">
+          <svg width="150" height="150">
+            <defs>
+              <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4ea1ff"/>
+                <stop offset="100%" stop-color="#7c5cff"/>
+              </linearGradient>
+            </defs>
+            <circle class="bg" cx="75" cy="75" r="62"/>
+            <circle class="fg" id="scoreRing" cx="75" cy="75" r="62"
+                    stroke-dasharray="0 999"/>
+          </svg>
+          <div class="val">
+            <div id="scoreVal">0</div>
+            <small>SCORE</small>
+          </div>
+        </div>
+        <div>
+          <div class="grade" id="gradeVal">—</div>
+          <div style="color:var(--mut);font-size:12px" id="ifaceVal">iface —</div>
+          <div class="genbadge" id="genBadge">—</div>
+          <div class="bars" id="bars"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="grid-column:span 2">
+      <h2>Real-time Metrics</h2>
+      <div class="tiles">
+        <div class="tile">
+          <div class="lbl">Download</div>
+          <div class="num" id="mDown">0<span class="unit">Mbps</span></div>
+        </div>
+        <div class="tile">
+          <div class="lbl">Upload</div>
+          <div class="num" id="mUp">0<span class="unit">Mbps</span></div>
+        </div>
+        <div class="tile">
+          <div class="lbl">Latency</div>
+          <div class="num" id="mLat">0<span class="unit">ms</span></div>
+        </div>
+        <div class="tile">
+          <div class="lbl">Jitter</div>
+          <div class="num" id="mJit">0<span class="unit">ms</span></div>
+        </div>
+        <div class="tile">
+          <div class="lbl">Packet Loss</div>
+          <div class="num" id="mLoss">0<span class="unit">%</span></div>
+        </div>
+        <div class="tile">
+          <div class="lbl">Network Type</div>
+          <div class="num" id="mNet" style="font-size:18px">—</div>
+        </div>
+      </div>
+      <div class="row mt">
+        <button id="btnSpeedtest">🚀 Endesha Speedtest</button>
+        <span id="speedtestOut" style="color:var(--mut);font-size:12px"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid cols-3" style="margin-bottom:16px">
+    <div class="card" style="grid-column:span 2">
+      <h2>Live Traffic — sekunde 90 zilizopita</h2>
+      <canvas id="chart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>🔮 Utabiri — sekunde 10 zijazo</h2>
+      <div id="predList"><div class="sub">Inasubiri data…</div></div>
+      <div class="row mt">
+        <span style="font-size:12px;color:var(--mut)">Auto-Switch</span>
+        <label class="switch">
+          <input type="checkbox" id="autoSwitchChk" checked>
+          <span class="slider"></span>
+        </label>
+        <span style="font-size:11px;color:var(--mut)" id="autoSwitchLbl">ON</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid cols-2" style="margin-bottom:16px">
+    <div class="card">
+      <h2>🎛️ Traffic Control (QoS Policy)</h2>
+      <div class="row">
+        <select id="policyMode">
+          <option value="balanced">⚖️ Balanced — mgawanyo sawa</option>
+          <option value="video">🎬 Video — kasi kwa streaming</option>
+          <option value="download">⬇️ Download — kasi kwa downloads</option>
+          <option value="browsing">🌐 Browsing — kasi kwa kurasa</option>
+        </select>
+      </div>
+      <div class="row mt">
+        <input id="activeApp" placeholder="App inayotumika (mf. YouTube, Chrome)…">
+      </div>
+      <div class="row mt">
+        <button id="btnApplyPolicy">Tumia Policy</button>
+        <span id="policyStatus" style="font-size:12px;color:var(--mut)"></span>
+      </div>
+      <div class="alloc" id="allocBox"></div>
+    </div>
+
+    <div class="card">
+      <h2>🔁 Switch Log</h2>
+      <div class="log" id="switchLog">
+        <div class="sub">Hakuna switch bado…</div>
+      </div>
+      <div class="row mt">
+        <button class="ghost" onclick="manualSwitch('Wi-Fi')">→ Wi-Fi</button>
+        <button class="ghost" onclick="manualSwitch('5G')">→ 5G</button>
+        <button class="ghost" onclick="manualSwitch('4G')">→ 4G</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h2>🛡️ Kichunguzi cha Link Hatari</h2>
+      <div class="row">
+        <input id="urlIn" placeholder="Weka link au domain (mf. http://secure-login.tk)…">
+        <button id="btnScan">Chunguza</button>
+      </div>
+      <div id="threatOut"></div>
+    </div>
+
+    <div class="card">
+      <h2>📋 Event Log</h2>
+      <div class="log" id="eventLog">
+        <div class="sub">Hakuna events…</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <script>
-const $=x=>document.getElementById(x);
-function render(d){let n=d.network,h=d.health,x=d.decision;
-$("status").textContent=d.status;$("quality").textContent=n.quality+" • "+n.confidence+" CONFIDENCE";
-$("health").textContent=h.score+"/100";$("latency").textContent=n.latency_avg_ms+" ms";
-$("jitter").textContent=n.jitter_ms+" ms";$("loss").textContent=n.probe_loss_percent+" %";
-$("success").textContent=n.successful_probes+" / "+n.probes;$("confidence").textContent=n.confidence;
-$("action").textContent=x.action;$("recommendation").textContent=x.recommendation;
-$("priority").textContent="Priority: "+x.priority;$("min").textContent=n.latency_min_ms+" ms";
-$("max").textContent=n.latency_max_ms+" ms";$("raw").textContent=JSON.stringify(d,null,2)}
-async function runTest(){let b=$("btn");b.disabled=true;b.textContent="⏳ MEASURING...";
-try{let r=await fetch("/api/test",{cache:"no-store"}),d=await r.json();if(!r.ok||d.status==="ERROR")throw Error(d.error||"API error");render(d)}
-catch(e){$("status").textContent="ERROR";$("quality").textContent=e.message}
-finally{b.disabled=false;b.textContent="▶ RUN NETWORK TEST"}}
-runTest();setInterval(async()=>{try{let r=await fetch("/api/health",{cache:"no-store"});if(r.ok)render(await r.json())}catch(e){}},15000);
-</script></body></html>
+const $ = id => document.getElementById(id);
+
+// ============================================================
+// SPLASH: generate floating particles + hide after 5 seconds
+// ============================================================
+(function initSplash(){
+  const box = $('particles');
+  if(!box) return;
+  for(let i=0; i<26; i++){
+    const s = document.createElement('span');
+    s.style.left = Math.random()*100 + '%';
+    s.style.top  = (60 + Math.random()*40) + '%';
+    s.style.animationDelay = (Math.random()*6) + 's';
+    s.style.animationDuration = (4 + Math.random()*4) + 's';
+    const size = 1 + Math.random()*3;
+    s.style.width = s.style.height = size + 'px';
+    box.appendChild(s);
+  }
+
+  // Splash inaishi ~5s, kisha inaondoka
+  const SPLASH_MS = 5000;
+  const splash = $('splash');
+  setTimeout(() => {
+    splash.classList.add('hide');
+    document.body.classList.add('ready');   // dashboard inaingia kwa fade
+    // Ondoa kabisa kwenye DOM baada ya transition
+    setTimeout(() => splash.remove(), 1000);
+  }, SPLASH_MS);
+})();
+
+// ---------- Chart ----------
+const cv = $('chart');
+const ctx = cv.getContext('2d');
+function fitCanvas(){
+  const r = cv.getBoundingClientRect();
+  cv.width = r.width * devicePixelRatio;
+  cv.height = r.height * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+window.addEventListener('resize', () => { cv.width = cv.width; fitCanvas(); });
+fitCanvas();
+
+function drawChart(hist){
+  const W = cv.width/devicePixelRatio, H = cv.height/devicePixelRatio;
+  ctx.clearRect(0,0,W,H);
+
+  ctx.strokeStyle = 'rgba(255,255,255,.05)';
+  ctx.lineWidth = 1;
+  for(let i=0;i<=4;i++){
+    const y = (H-20) * i/4 + 10;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  }
+  if(!hist || hist.length < 2) return;
+
+  const maxDown = Math.max(1, ...hist.map(h=>h.down));
+  const maxLat  = Math.max(50, ...hist.map(h=>h.lat));
+  const step = W / Math.max(1, hist.length-1);
+
+  const drawLine = (key, max, color) => {
+    ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.beginPath();
+    hist.forEach((h,i)=>{
+      const x = i*step;
+      const y = H - 10 - (h[key]/max) * (H-30);
+      i ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+    });
+    ctx.stroke();
+  };
+
+  drawLine('down', maxDown, '#4ea1ff');
+  drawLine('up',   maxDown, '#7c5cff');
+  drawLine('lat',  maxLat,  '#ffb02e');
+
+  const leg = [['Download','#4ea1ff'],['Upload','#7c5cff'],['Latency','#ffb02e']];
+  ctx.font = '11px sans-serif';
+  leg.forEach(([t,c],i)=>{
+    const x = 10 + i*90;
+    ctx.fillStyle = c; ctx.fillRect(x, 6, 10, 3);
+    ctx.fillStyle = '#8b9bc4'; ctx.fillText(t, x+15, 11);
+  });
+}
+
+const RING_R = 62, RING_C = 2*Math.PI*RING_R;
+function setRing(score){
+  const fg = $('scoreRing');
+  const dash = (score/100) * RING_C;
+  fg.setAttribute('stroke-dasharray', `${dash} ${RING_C}`);
+}
+
+function setBars(n){
+  const el = $('bars'); el.innerHTML='';
+  for(let i=1;i<=5;i++){
+    const b = document.createElement('i');
+    b.style.height = (6 + i*3) + 'px';
+    if(i<=n) b.classList.add('on');
+    el.appendChild(b);
+  }
+}
+
+function updateUI(s){
+  if(!s || !s.timestamp) return;
+  $('scoreVal').textContent = Math.round(s.health_score);
+  setRing(s.health_score);
+  $('gradeVal').textContent = s.grade;
+  $('ifaceVal').textContent = s.interface + ' • ' + s.network_type;
+  $('genBadge').textContent = s.generation;
+  setBars(s.signal_bars);
+
+  $('mDown').innerHTML  = s.download_mbps.toFixed(2) + '<span class="unit">Mbps</span>';
+  $('mUp').innerHTML    = s.upload_mbps.toFixed(2)   + '<span class="unit">Mbps</span>';
+  $('mLat').innerHTML   = s.latency_ms.toFixed(0)    + '<span class="unit">ms</span>';
+  $('mJit').innerHTML   = s.jitter_ms.toFixed(1)     + '<span class="unit">ms</span>';
+  $('mLoss').innerHTML  = s.packet_loss.toFixed(1)   + '<span class="unit">%</span>';
+  $('mNet').textContent = s.network_type + ' / ' + s.generation;
+
+  const pl = $('predList');
+  if(s.predictions && s.predictions.length){
+    pl.innerHTML = s.predictions.map(p=>{
+      const up = p.delta_pct >= 0;
+      const cls = up ? 'up' : 'down';
+      const arrow = up ? '▲' : '▼';
+      const label = {download_mbps:'Download', upload_mbps:'Upload', latency_ms:'Latency'}[p.metric] || p.metric;
+      return `<div class="pred-row">
+        <span>${label}</span>
+        <span>
+          <b>${p.current}</b> →
+          <b>${p.predicted_10s}</b> ${p.unit}
+          <span class="arrow ${cls}">${arrow} ${p.delta_pct}%</span>
+        </span>
+      </div>`;
+    }).join('');
+  }
+
+  const sl = $('switchLog');
+  if(s.switch_log && s.switch_log.length){
+    sl.innerHTML = s.switch_log.slice().reverse().map(e=>{
+      const cls = e.error ? 'error' : (e.executed ? 'ok' : 'warn');
+      const status = e.executed ? '✅ imetekelezwa' : (e.error ? '❌ '+e.error : '💡 mapendekezo');
+      return `<div class="log-item ${cls}">
+        <span class="ts">${new Date(e.ts).toLocaleTimeString()}</span>
+        <b>${e.from}</b> → <b>${e.to}</b> · ${status}<br>
+        <span style="color:var(--mut)">${e.reason}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const el = $('eventLog');
+  if(s.events && s.events.length){
+    el.innerHTML = s.events.slice().reverse().map(e=>{
+      const cls = e.level === 'error' ? 'error' : e.level === 'warn' ? 'warn' : 'ok';
+      return `<div class="log-item ${cls}">
+        <span class="ts">${new Date(e.ts).toLocaleTimeString()}</span>${e.msg}
+      </div>`;
+    }).join('');
+  }
+
+  drawChart(s.history);
+
+  if(typeof s.auto_switch === 'boolean'){
+    $('autoSwitchChk').checked = s.auto_switch;
+    $('autoSwitchLbl').textContent = s.auto_switch ? 'ON' : 'OFF';
+  }
+
+  if(s.policy && s.policy.allocations){
+    const a = s.policy.allocations;
+    $('allocBox').innerHTML = Object.entries(a).map(([k,v])=>
+      `<div><div class="a-lbl">${k}</div><div class="a-val">${Math.round(v*100)}%</div></div>`
+    ).join('');
+    $('policyMode').value = s.policy.mode;
+  }
+}
+
+// ---------- WebSocket ----------
+let ws, retry = 0;
+function connect(){
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws`);
+  ws.onopen = () => { $('liveStatus').textContent = 'LIVE'; retry = 0; };
+  ws.onmessage = ev => {
+    try { updateUI(JSON.parse(ev.data)); } catch(e){ console.error(e); }
+  };
+  ws.onclose = () => {
+    $('liveStatus').textContent = 'RECONNECTING…';
+    retry = Math.min(retry+1, 6);
+    setTimeout(connect, 1000*retry);
+  };
+  ws.onerror = () => ws.close();
+}
+connect();
+
+// ---------- Actions ----------
+$('btnSpeedtest').addEventListener('click', async ()=>{
+  const btn = $('btnSpeedtest');
+  btn.disabled = true; $('speedtestOut').textContent = 'Inapima… subiri sekunde ~20';
+  try{
+    const r = await fetch('/api/speedtest', {method:'POST'});
+    const d = await r.json();
+    if(d.error) $('speedtestOut').textContent = '⚠️ ' + d.error;
+    else $('speedtestOut').textContent =
+      `↓ ${d.download_mbps} Mbps  •  ↑ ${d.upload_mbps} Mbps  •  ${d.ping_ms} ms`;
+  }catch(e){ $('speedtestOut').textContent = 'Hitilafu'; }
+  btn.disabled = false;
+});
+
+$('btnApplyPolicy').addEventListener('click', async ()=>{
+  const mode = $('policyMode').value;
+  const app = $('activeApp').value.trim() || null;
+  const r = await fetch('/api/policy', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({mode, active_app: app})
+  });
+  const d = await r.json();
+  $('policyStatus').textContent = `✅ ${d.mode} imewekwa` + (app ? ` (${app})` : '');
+});
+
+$('autoSwitchChk').addEventListener('change', async (e)=>{
+  await fetch('/api/auto-switch', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({enabled: e.target.checked})
+  });
+});
+
+async function manualSwitch(target){
+  await fetch('/api/switch', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({target, reason:'Manual kutoka dashboard'})
+  });
+}
+
+$('btnScan').addEventListener('click', async ()=>{
+  const url = $('urlIn').value.trim();
+  if(!url) return;
+  const r = await fetch('/api/scan-url', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({url})
+  });
+  const d = await r.json();
+  const icon = d.level === 'HIGH' ? '🚨' : d.level === 'MEDIUM' ? '⚠️' : '✅';
+  $('threatOut').innerHTML = `
+    <div class="threat ${d.level}">
+      <b>${icon} ${d.level} — Risk Score: ${d.risk}/100</b>
+      <ul>${d.findings.map(f=>`<li>${f}</li>`).join('')}</ul>
+    </div>`;
+});
+
+$('urlIn').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') $('btnScan').click();
+});
+</script>
+</body>
+</html>
