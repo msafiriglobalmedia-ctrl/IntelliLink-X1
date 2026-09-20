@@ -1,15 +1,12 @@
 <!DOCTYPE html>
-<html lang="sw">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>IntelliLink X1</title>
-
-<!-- Google Fonts: Orbitron (heading) + Space Grotesk (subtitle + body) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
-
 <style>
   :root{
     --bg:#0a0e1a; --card:rgba(20,28,48,.75);
@@ -21,7 +18,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{overflow-x:hidden}
   body{
-    font-family:'Space Grotesk','Segoe UI',system-ui,-apple-system,sans-serif;
+    font-family:'Space Grotesk','Segoe UI',system-ui,sans-serif;
     background:radial-gradient(1200px 800px at 20% 0%,#132048 0%,var(--bg) 55%),
                radial-gradient(900px 700px at 100% 100%,#1c1440 0%,transparent 60%);
     color:var(--txt); min-height:100vh; padding:24px;
@@ -47,6 +44,7 @@
         color:var(--acc)}
   .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);
              box-shadow:0 0 8px var(--ok);animation:pulse 1.6s infinite}
+  .pill.off .dot{background:var(--bad);box-shadow:0 0 8px var(--bad)}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
   .grid{display:grid;gap:16px}
@@ -67,7 +65,7 @@
   .ring .fg{stroke:url(#g1);stroke-width:12;fill:none;
             stroke-linecap:round;transition:stroke-dasharray .6s}
   .ring .val{position:absolute;inset:0;display:grid;place-items:center;
-             flex-direction:column;font-size:30px;font-weight:800;
+             font-size:30px;font-weight:800;
              font-family:'Orbitron',sans-serif}
   .ring .val small{display:block;font-size:11px;color:var(--mut);
                    letter-spacing:1px;margin-top:-4px;font-weight:500}
@@ -114,6 +112,7 @@
   button:hover{transform:translateY(-1px);filter:brightness(1.1)}
   button.ghost{background:rgba(255,255,255,.06);border:1px solid var(--line);
                color:var(--txt)}
+  button.danger{background:linear-gradient(135deg,#ff4d6d,#ff7043)}
   button:disabled{opacity:.5;cursor:not-allowed;transform:none}
   input,select{font-family:inherit;font-size:13px;padding:10px 12px;
                border-radius:10px;border:1px solid var(--line);
@@ -122,6 +121,8 @@
   input:focus,select:focus{border-color:var(--acc)}
   .row{display:flex;gap:8px;align-items:center}
   .mt{margin-top:10px}
+  code{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:6px;
+       font-family:ui-monospace,Menlo,monospace;font-size:12px}
 
   .switch{position:relative;display:inline-block;width:44px;height:24px}
   .switch input{opacity:0;width:0;height:0}
@@ -149,246 +150,129 @@
   .alloc .a-val{font-size:18px;font-weight:800;margin-top:4px;
                 font-family:'Orbitron',sans-serif}
 
-  /* =========================================================
-     ✨ SPLASH SCREEN — INTELLILINK X1
-     ========================================================= */
-  #splash{
-    position:fixed; inset:0; z-index:9999;
-    background:radial-gradient(circle at 50% 45%, #0c1836 0%, #05070f 65%);
-    display:grid; place-items:center;
-    overflow:hidden;
-    transition:opacity .9s cubic-bezier(.4,0,.2,1),
-               visibility .9s, filter .9s;
-  }
-  #splash.hide{
-    opacity:0; visibility:hidden;
-    filter:blur(20px);
-    pointer-events:none;
-  }
+  /* Device card */
+  .device-badge{display:inline-flex;align-items:center;gap:6px;
+                padding:4px 10px;border-radius:999px;font-size:11px;
+                background:rgba(32,227,160,.12);border:1px solid rgba(32,227,160,.3);
+                color:var(--ok);font-weight:600}
+  .device-badge.off{background:rgba(255,77,109,.12);
+                    border-color:rgba(255,77,109,.3);color:var(--bad)}
+  .token-box{background:rgba(0,0,0,.3);border:1px solid var(--line);
+             border-radius:10px;padding:12px;font-family:ui-monospace,monospace;
+             font-size:12px;margin-top:10px;word-break:break-all;
+             color:var(--acc)}
+  .signal-bars{display:inline-flex;gap:2px;vertical-align:middle}
+  .signal-bars i{width:4px;background:rgba(255,255,255,.15);border-radius:1px}
+  .signal-bars i.on{background:var(--ok)}
 
-  /* Aurora / blue shining background */
-  .splash-bg{
-    position:absolute; inset:-25%;
-    background:
-      radial-gradient(circle at 30% 40%, rgba(78,161,255,.45), transparent 42%),
-      radial-gradient(circle at 70% 60%, rgba(124,92,255,.42), transparent 42%),
-      radial-gradient(circle at 50% 80%, rgba(0,220,255,.30), transparent 50%);
-    filter:blur(60px);
-    animation:bgPulse 5s ease-in-out infinite;
-  }
-  @keyframes bgPulse{
-    0%,100%{ transform:scale(1) rotate(0deg); opacity:.85; }
-    50%    { transform:scale(1.15) rotate(8deg); opacity:1; }
-  }
-
-  /* Shine sweep across the screen */
-  .splash-shine{
-    position:absolute; inset:-40% -40%;
-    background:linear-gradient(115deg,
-      transparent 40%,
-      rgba(120,190,255,.16) 48%,
-      rgba(200,230,255,.28) 50%,
-      rgba(120,190,255,.16) 52%,
-      transparent 60%);
-    animation:sweep 3.5s ease-in-out infinite;
-    mix-blend-mode:screen;
-  }
-  @keyframes sweep{
-    0%   { transform:translateX(-60%) }
-    100% { transform:translateX(60%)  }
-  }
-
-  /* Particles / floating dots */
-  .splash-particles span{
-    position:absolute; width:3px; height:3px; border-radius:50%;
-    background:#7cbcff; box-shadow:0 0 8px #4ea1ff;
-    opacity:0; animation:float 6s linear infinite;
-  }
-  @keyframes float{
-    0%   { transform:translateY(0) scale(.5); opacity:0; }
-    20%  { opacity:.9; }
-    100% { transform:translateY(-120px) scale(1); opacity:0; }
-  }
-
-  /* Content stack */
-  .splash-content{
-    position:relative; z-index:2;
-    display:flex; flex-direction:column; align-items:center;
-    text-align:center; padding:0 20px;
-  }
-
-  /* Logo SVG */
-  .logo-wrap{
-    width:220px; height:220px;
-    display:grid; place-items:center;
-    position:relative;
-    animation:logoIn 1.4s cubic-bezier(.2,.9,.25,1.05) both;
-  }
-  @keyframes logoIn{
-    0%  { transform:scale(.15) rotate(-120deg); opacity:0; filter:blur(8px); }
-    55% { transform:scale(1.12) rotate(15deg);  opacity:1; filter:blur(0); }
-    100%{ transform:scale(1) rotate(0deg);      opacity:1; filter:blur(0); }
-  }
-  .logo-svg{
-    width:100%; height:100%;
+  /* Splash */
+  #splash{position:fixed;inset:0;z-index:9999;
+    background:radial-gradient(circle at 50% 45%,#0c1836 0%,#05070f 65%);
+    display:grid;place-items:center;overflow:hidden;
+    transition:opacity .9s cubic-bezier(.4,0,.2,1),visibility .9s,filter .9s;}
+  #splash.hide{opacity:0;visibility:hidden;filter:blur(20px);pointer-events:none}
+  .splash-bg{position:absolute;inset:-25%;
+    background:radial-gradient(circle at 30% 40%,rgba(78,161,255,.45),transparent 42%),
+               radial-gradient(circle at 70% 60%,rgba(124,92,255,.42),transparent 42%),
+               radial-gradient(circle at 50% 80%,rgba(0,220,255,.30),transparent 50%);
+    filter:blur(60px);animation:bgPulse 5s ease-in-out infinite}
+  @keyframes bgPulse{0%,100%{transform:scale(1) rotate(0);opacity:.85}
+    50%{transform:scale(1.15) rotate(8deg);opacity:1}}
+  .splash-shine{position:absolute;inset:-40% -40%;
+    background:linear-gradient(115deg,transparent 40%,rgba(120,190,255,.16) 48%,
+      rgba(200,230,255,.28) 50%,rgba(120,190,255,.16) 52%,transparent 60%);
+    animation:sweep 3.5s ease-in-out infinite;mix-blend-mode:screen}
+  @keyframes sweep{0%{transform:translateX(-60%)}100%{transform:translateX(60%)}}
+  .splash-particles span{position:absolute;width:3px;height:3px;border-radius:50%;
+    background:#7cbcff;box-shadow:0 0 8px #4ea1ff;opacity:0;
+    animation:float 6s linear infinite}
+  @keyframes float{0%{transform:translateY(0) scale(.5);opacity:0}
+    20%{opacity:.9}100%{transform:translateY(-120px) scale(1);opacity:0}}
+  .splash-content{position:relative;z-index:2;display:flex;flex-direction:column;
+    align-items:center;text-align:center;padding:0 20px}
+  .logo-wrap{width:220px;height:220px;display:grid;place-items:center;
+    position:relative;animation:logoIn 1.4s cubic-bezier(.2,.9,.25,1.05) both}
+  @keyframes logoIn{0%{transform:scale(.15) rotate(-120deg);opacity:0;filter:blur(8px)}
+    55%{transform:scale(1.12) rotate(15deg);opacity:1;filter:blur(0)}
+    100%{transform:scale(1) rotate(0);opacity:1;filter:blur(0)}}
+  .logo-svg{width:100%;height:100%;
     filter:drop-shadow(0 0 26px rgba(78,161,255,.55))
-           drop-shadow(0 0 60px rgba(124,92,255,.35));
-  }
-  .glow-pulse{ transform-origin:100px 100px;
-    animation:glowPulse 3s ease-in-out infinite; }
-  @keyframes glowPulse{
-    0%,100%{ transform:scale(1);   opacity:.55 }
-    50%    { transform:scale(1.18); opacity:.9  }
-  }
-  .ring-outer{ transform-origin:100px 100px;
-    animation:spin 22s linear infinite; }
-  .ring-mid  { transform-origin:100px 100px;
-    animation:spinR 15s linear infinite; }
-  .ring-inner{ transform-origin:100px 100px;
-    animation:spin 30s linear infinite reverse; opacity:.9 }
-  @keyframes spin { to { transform:rotate(360deg) } }
-  @keyframes spinR{ to { transform:rotate(-360deg) } }
-
-  .bolt{
-    transform-origin:100px 100px;
-    animation:boltPulse 1.9s ease-in-out infinite;
-    filter:drop-shadow(0 0 8px #4ea1ff);
-  }
-  @keyframes boltPulse{
-    0%,100%{ transform:scale(1);   filter:drop-shadow(0 0 6px #4ea1ff) }
-    50%    { transform:scale(1.08);filter:drop-shadow(0 0 22px #7c5cff) }
-  }
-
-  .node{ animation:nodePulse 2.4s ease-in-out infinite; }
-  .n1{ animation-delay:0s }
-  .n2{ animation-delay:.6s }
-  .n3{ animation-delay:1.2s }
-  .n4{ animation-delay:1.8s }
-  @keyframes nodePulse{
-    0%,100%{ opacity:.4; r:3 }
-    50%    { opacity:1;  r:5 }
-  }
-
-  /* Heading */
-  .splash-title{
-    font-family:'Orbitron',sans-serif;
-    font-weight:900;
-    font-size:clamp(34px, 6vw, 58px);
-    letter-spacing:4px;
-    margin-top:28px;
-    background:linear-gradient(90deg,
-      #4ea1ff 0%, #7c5cff 25%, #b8d9ff 50%, #7c5cff 75%, #4ea1ff 100%);
-    background-size:200% auto;
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    filter:drop-shadow(0 0 20px rgba(78,161,255,.45));
-    opacity:0;
-    animation:
-      fadeUp .9s ease 1.15s forwards,
-      shine 3.2s linear 1.15s infinite;
-  }
-  .splash-title .x1{
-    -webkit-text-fill-color:#fff;
-    color:#fff;
-    margin-left:6px;
-  }
-  @keyframes fadeUp{
-    from{ opacity:0; transform:translateY(24px) }
-    to  { opacity:1; transform:translateY(0)    }
-  }
-  @keyframes shine{
-    to{ background-position:200% center }
-  }
-
-  /* Subtitle / tagline */
-  .splash-tag{
-    font-family:'Space Grotesk',sans-serif;
-    font-style:italic;
-    font-weight:300;
-    font-size:clamp(13px, 1.6vw, 18px);
-    letter-spacing:6px;
-    text-transform:lowercase;
-    color:#9fb4dd;
-    margin-top:14px;
-    opacity:0;
-    animation:fadeUp .9s ease 1.6s forwards;
-  }
-  .splash-tag::before,
-  .splash-tag::after{
-    content:""; display:inline-block; vertical-align:middle;
-    width:34px; height:1px; margin:0 14px;
-    background:linear-gradient(90deg, transparent, #4ea1ff, transparent);
-    opacity:.7;
-  }
-
-  /* Fade-out timing: holela inaisha ~5s */
+           drop-shadow(0 0 60px rgba(124,92,255,.35))}
+  .glow-pulse{transform-origin:100px 100px;animation:glowPulse 3s ease-in-out infinite}
+  @keyframes glowPulse{0%,100%{transform:scale(1);opacity:.55}
+    50%{transform:scale(1.18);opacity:.9}}
+  .ring-outer{transform-origin:100px 100px;animation:spin 22s linear infinite}
+  .ring-mid{transform-origin:100px 100px;animation:spinR 15s linear infinite}
+  .ring-inner{transform-origin:100px 100px;animation:spin 30s linear infinite reverse;opacity:.9}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes spinR{to{transform:rotate(-360deg)}}
+  .bolt{transform-origin:100px 100px;animation:boltPulse 1.9s ease-in-out infinite;
+    filter:drop-shadow(0 0 8px #4ea1ff)}
+  @keyframes boltPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 6px #4ea1ff)}
+    50%{transform:scale(1.08);filter:drop-shadow(0 0 22px #7c5cff)}}
+  .node{animation:nodePulse 2.4s ease-in-out infinite}
+  .n1{animation-delay:0s}.n2{animation-delay:.6s}.n3{animation-delay:1.2s}.n4{animation-delay:1.8s}
+  @keyframes nodePulse{0%,100%{opacity:.4}50%{opacity:1}}
+  .splash-title{font-family:'Orbitron',sans-serif;font-weight:900;
+    font-size:clamp(34px,6vw,58px);letter-spacing:4px;margin-top:28px;
+    background:linear-gradient(90deg,#4ea1ff 0%,#7c5cff 25%,#b8d9ff 50%,#7c5cff 75%,#4ea1ff 100%);
+    background-size:200% auto;-webkit-background-clip:text;background-clip:text;
+    color:transparent;filter:drop-shadow(0 0 20px rgba(78,161,255,.45));opacity:0;
+    animation:fadeUp .9s ease 1.15s forwards, shine 3.2s linear 1.15s infinite}
+  .splash-title .x1{-webkit-text-fill-color:#fff;color:#fff;margin-left:6px}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes shine{to{background-position:200% center}}
+  .splash-tag{font-family:'Space Grotesk',sans-serif;font-style:italic;font-weight:300;
+    font-size:clamp(13px,1.6vw,18px);letter-spacing:6px;text-transform:lowercase;
+    color:#9fb4dd;margin-top:14px;opacity:0;animation:fadeUp .9s ease 1.6s forwards}
+  .splash-tag::before,.splash-tag::after{content:"";display:inline-block;
+    vertical-align:middle;width:34px;height:1px;margin:0 14px;
+    background:linear-gradient(90deg,transparent,#4ea1ff,transparent);opacity:.7}
 </style>
 </head>
 <body>
 
-<!-- ============================================================
-     ✨ INTELLILINK X1 — SPLASH SCREEN
-     ============================================================ -->
+<!-- ===================== SPLASH ===================== -->
 <div id="splash" aria-hidden="true">
   <div class="splash-bg"></div>
   <div class="splash-shine"></div>
   <div class="splash-particles" id="particles"></div>
-
   <div class="splash-content">
     <div class="logo-wrap">
       <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stop-color="#4ea1ff"/>
-            <stop offset="50%"  stop-color="#7c5cff"/>
+            <stop offset="0%" stop-color="#4ea1ff"/>
+            <stop offset="50%" stop-color="#7c5cff"/>
             <stop offset="100%" stop-color="#00d0ff"/>
           </linearGradient>
           <radialGradient id="glow">
-            <stop offset="0%"   stop-color="#4ea1ff" stop-opacity="0.55"/>
-            <stop offset="60%"  stop-color="#7c5cff" stop-opacity="0.15"/>
+            <stop offset="0%" stop-color="#4ea1ff" stop-opacity="0.55"/>
+            <stop offset="60%" stop-color="#7c5cff" stop-opacity="0.15"/>
             <stop offset="100%" stop-color="#4ea1ff" stop-opacity="0"/>
           </radialGradient>
         </defs>
-
-        <!-- Soft glow -->
         <circle class="glow-pulse" cx="100" cy="100" r="92" fill="url(#glow)"/>
-
-        <!-- Outer dashed ring -->
-        <circle class="ring-outer" cx="100" cy="100" r="82"
-                fill="none" stroke="url(#lg1)" stroke-width="1.6"
-                stroke-dasharray="4 10" stroke-linecap="round"/>
-
-        <!-- Middle dashed ring -->
-        <circle class="ring-mid" cx="100" cy="100" r="62"
-                fill="none" stroke="url(#lg1)" stroke-width="1.2"
-                stroke-dasharray="24 12" opacity=".8"/>
-
-        <!-- Inner solid ring -->
-        <circle class="ring-inner" cx="100" cy="100" r="44"
-                fill="none" stroke="#4ea1ff" stroke-width="2.2"
-                stroke-dasharray="30 12" opacity=".85"/>
-
-        <!-- Lightning bolt -->
-        <path class="bolt"
-              d="M108 62 L82 108 L100 108 L90 142 L122 92 L104 92 Z"
-              fill="url(#lg1)"/>
-
-        <!-- Orbiting nodes -->
-        <circle class="node n1" cx="100" cy="18"  r="4" fill="#4ea1ff"/>
+        <circle class="ring-outer" cx="100" cy="100" r="82" fill="none"
+                stroke="url(#lg1)" stroke-width="1.6" stroke-dasharray="4 10" stroke-linecap="round"/>
+        <circle class="ring-mid" cx="100" cy="100" r="62" fill="none"
+                stroke="url(#lg1)" stroke-width="1.2" stroke-dasharray="24 12" opacity=".8"/>
+        <circle class="ring-inner" cx="100" cy="100" r="44" fill="none"
+                stroke="#4ea1ff" stroke-width="2.2" stroke-dasharray="30 12" opacity=".85"/>
+        <path class="bolt" d="M108 62 L82 108 L100 108 L90 142 L122 92 L104 92 Z" fill="url(#lg1)"/>
+        <circle class="node n1" cx="100" cy="18" r="4" fill="#4ea1ff"/>
         <circle class="node n2" cx="182" cy="100" r="4" fill="#7c5cff"/>
         <circle class="node n3" cx="100" cy="182" r="4" fill="#00d0ff"/>
-        <circle class="node n4" cx="18"  cy="100" r="4" fill="#7c5cff"/>
+        <circle class="node n4" cx="18" cy="100" r="4" fill="#7c5cff"/>
       </svg>
     </div>
-
     <h1 class="splash-title">IntelliLink<span class="x1">X1</span></h1>
     <p class="splash-tag">future thinks before you do</p>
   </div>
 </div>
 
-<!-- ============================================================ -->
-<div class="wrap" id="appRoot">
+<!-- ===================== APP ===================== -->
+<div class="wrap">
 
   <header>
     <div class="brand">
@@ -398,11 +282,45 @@
         <div class="sub">future thinks before you do</div>
       </div>
     </div>
-    <div class="pill"><span class="dot"></span><span id="liveStatus">LIVE</span></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span id="devicePill" class="pill off"><span class="dot"></span>
+        <span id="devicePillText">No device linked</span></span>
+      <span class="pill"><span class="dot"></span>
+        <span id="liveStatus">LIVE</span></span>
+    </div>
   </header>
 
+  <!-- DEVICE LINKING -->
+  <div class="card" style="margin-bottom:16px">
+    <h2>📱 Device Linking — Connect Your Phone</h2>
+    <div id="devicePanel">
+      <div class="sub" style="font-size:13px;line-height:1.6">
+        Link your phone to let IntelliLink X1 monitor &amp; control its network even when
+        this page is closed. Follow the steps below.
+      </div>
+
+      <div class="row mt" style="gap:8px;flex-wrap:wrap">
+        <input id="newDeviceName" placeholder="Device name (e.g. My Phone)"
+               style="flex:1;min-width:200px">
+        <button id="btnRegisterDevice">➕ Register New Device</button>
+      </div>
+
+      <div id="registerOutput"></div>
+
+      <div class="row mt" style="gap:8px;flex-wrap:wrap">
+        <select id="deviceSelect" style="flex:1;min-width:200px"></select>
+        <button id="btnLinkDevice">🔗 Link</button>
+        <button id="btnUnlinkDevice" class="ghost">Unlink</button>
+        <button id="btnRefreshDevices" class="ghost">↻ Refresh</button>
+      </div>
+
+      <div id="linkedInfo" class="mt"></div>
+    </div>
+  </div>
+
+  <!-- TOP ROW -->
   <div class="grid cols-3" style="margin-bottom:16px">
-    <div class="card" style="grid-column:span 1">
+    <div class="card">
       <h2>Network Health Score</h2>
       <div class="score-box">
         <div class="ring">
@@ -414,8 +332,7 @@
               </linearGradient>
             </defs>
             <circle class="bg" cx="75" cy="75" r="62"/>
-            <circle class="fg" id="scoreRing" cx="75" cy="75" r="62"
-                    stroke-dasharray="0 999"/>
+            <circle class="fg" id="scoreRing" cx="75" cy="75" r="62" stroke-dasharray="0 999"/>
           </svg>
           <div class="val">
             <div id="scoreVal">0</div>
@@ -434,47 +351,35 @@
     <div class="card" style="grid-column:span 2">
       <h2>Real-time Metrics</h2>
       <div class="tiles">
-        <div class="tile">
-          <div class="lbl">Download</div>
-          <div class="num" id="mDown">0<span class="unit">Mbps</span></div>
-        </div>
-        <div class="tile">
-          <div class="lbl">Upload</div>
-          <div class="num" id="mUp">0<span class="unit">Mbps</span></div>
-        </div>
-        <div class="tile">
-          <div class="lbl">Latency</div>
-          <div class="num" id="mLat">0<span class="unit">ms</span></div>
-        </div>
-        <div class="tile">
-          <div class="lbl">Jitter</div>
-          <div class="num" id="mJit">0<span class="unit">ms</span></div>
-        </div>
-        <div class="tile">
-          <div class="lbl">Packet Loss</div>
-          <div class="num" id="mLoss">0<span class="unit">%</span></div>
-        </div>
-        <div class="tile">
-          <div class="lbl">Network Type</div>
-          <div class="num" id="mNet" style="font-size:18px">—</div>
-        </div>
+        <div class="tile"><div class="lbl">Download</div>
+          <div class="num" id="mDown">0<span class="unit">Mbps</span></div></div>
+        <div class="tile"><div class="lbl">Upload</div>
+          <div class="num" id="mUp">0<span class="unit">Mbps</span></div></div>
+        <div class="tile"><div class="lbl">Latency</div>
+          <div class="num" id="mLat">0<span class="unit">ms</span></div></div>
+        <div class="tile"><div class="lbl">Jitter</div>
+          <div class="num" id="mJit">0<span class="unit">ms</span></div></div>
+        <div class="tile"><div class="lbl">Packet Loss</div>
+          <div class="num" id="mLoss">0<span class="unit">%</span></div></div>
+        <div class="tile"><div class="lbl">Network Type</div>
+          <div class="num" id="mNet" style="font-size:18px">—</div></div>
       </div>
       <div class="row mt">
-        <button id="btnSpeedtest">🚀 Endesha Speedtest</button>
+        <button id="btnSpeedtest">🚀 Run Speedtest</button>
         <span id="speedtestOut" style="color:var(--mut);font-size:12px"></span>
       </div>
     </div>
   </div>
 
+  <!-- CHART + PREDICTION -->
   <div class="grid cols-3" style="margin-bottom:16px">
     <div class="card" style="grid-column:span 2">
-      <h2>Live Traffic — sekunde 90 zilizopita</h2>
+      <h2>Live Traffic — last 90 seconds</h2>
       <canvas id="chart"></canvas>
     </div>
-
     <div class="card">
-      <h2>🔮 Utabiri — sekunde 10 zijazo</h2>
-      <div id="predList"><div class="sub">Inasubiri data…</div></div>
+      <h2>🔮 Prediction — next 10 seconds</h2>
+      <div id="predList"><div class="sub">Waiting for data…</div></div>
       <div class="row mt">
         <span style="font-size:12px;color:var(--mut)">Auto-Switch</span>
         <label class="switch">
@@ -486,22 +391,23 @@
     </div>
   </div>
 
+  <!-- POLICY + SWITCH LOG -->
   <div class="grid cols-2" style="margin-bottom:16px">
     <div class="card">
       <h2>🎛️ Traffic Control (QoS Policy)</h2>
       <div class="row">
         <select id="policyMode">
-          <option value="balanced">⚖️ Balanced — mgawanyo sawa</option>
-          <option value="video">🎬 Video — kasi kwa streaming</option>
-          <option value="download">⬇️ Download — kasi kwa downloads</option>
-          <option value="browsing">🌐 Browsing — kasi kwa kurasa</option>
+          <option value="balanced">⚖️ Balanced — equal share</option>
+          <option value="video">🎬 Video — prioritize streaming</option>
+          <option value="download">⬇️ Download — prioritize downloads</option>
+          <option value="browsing">🌐 Browsing — prioritize pages</option>
         </select>
       </div>
       <div class="row mt">
-        <input id="activeApp" placeholder="App inayotumika (mf. YouTube, Chrome)…">
+        <input id="activeApp" placeholder="Active app (e.g. YouTube, Chrome)…">
       </div>
       <div class="row mt">
-        <button id="btnApplyPolicy">Tumia Policy</button>
+        <button id="btnApplyPolicy">Apply Policy</button>
         <span id="policyStatus" style="font-size:12px;color:var(--mut)"></span>
       </div>
       <div class="alloc" id="allocBox"></div>
@@ -510,30 +416,32 @@
     <div class="card">
       <h2>🔁 Switch Log</h2>
       <div class="log" id="switchLog">
-        <div class="sub">Hakuna switch bado…</div>
+        <div class="sub">No switches yet…</div>
       </div>
-      <div class="row mt">
+      <div class="row mt" style="flex-wrap:wrap">
         <button class="ghost" onclick="manualSwitch('Wi-Fi')">→ Wi-Fi</button>
         <button class="ghost" onclick="manualSwitch('5G')">→ 5G</button>
         <button class="ghost" onclick="manualSwitch('4G')">→ 4G</button>
+        <button class="ghost" onclick="manualSwitch('3G')">→ 3G</button>
+        <button class="ghost" onclick="manualSwitch('Cellular')">→ Cellular</button>
       </div>
     </div>
   </div>
 
+  <!-- THREAT + EVENTS -->
   <div class="grid cols-2">
     <div class="card">
-      <h2>🛡️ Kichunguzi cha Link Hatari</h2>
+      <h2>🛡️ Threat Link Scanner</h2>
       <div class="row">
-        <input id="urlIn" placeholder="Weka link au domain (mf. http://secure-login.tk)…">
-        <button id="btnScan">Chunguza</button>
+        <input id="urlIn" placeholder="Paste link or domain (e.g. http://secure-login.tk)…">
+        <button id="btnScan">Scan</button>
       </div>
       <div id="threatOut"></div>
     </div>
-
     <div class="card">
       <h2>📋 Event Log</h2>
       <div class="log" id="eventLog">
-        <div class="sub">Hakuna events…</div>
+        <div class="sub">No events…</div>
       </div>
     </div>
   </div>
@@ -543,13 +451,11 @@
 <script>
 const $ = id => document.getElementById(id);
 
-// ============================================================
-// SPLASH: generate floating particles + hide after 5 seconds
-// ============================================================
+// ============ SPLASH ============
 (function initSplash(){
   const box = $('particles');
   if(!box) return;
-  for(let i=0; i<26; i++){
+  for(let i=0;i<26;i++){
     const s = document.createElement('span');
     s.style.left = Math.random()*100 + '%';
     s.style.top  = (60 + Math.random()*40) + '%';
@@ -559,21 +465,16 @@ const $ = id => document.getElementById(id);
     s.style.width = s.style.height = size + 'px';
     box.appendChild(s);
   }
-
-  // Splash inaishi ~5s, kisha inaondoka
-  const SPLASH_MS = 5000;
   const splash = $('splash');
   setTimeout(() => {
     splash.classList.add('hide');
-    document.body.classList.add('ready');   // dashboard inaingia kwa fade
-    // Ondoa kabisa kwenye DOM baada ya transition
+    document.body.classList.add('ready');
     setTimeout(() => splash.remove(), 1000);
-  }, SPLASH_MS);
+  }, 5000);
 })();
 
-// ---------- Chart ----------
-const cv = $('chart');
-const ctx = cv.getContext('2d');
+// ============ CHART ============
+const cv = $('chart'), ctx = cv.getContext('2d');
 function fitCanvas(){
   const r = cv.getBoundingClientRect();
   cv.width = r.width * devicePixelRatio;
@@ -586,34 +487,29 @@ fitCanvas();
 function drawChart(hist){
   const W = cv.width/devicePixelRatio, H = cv.height/devicePixelRatio;
   ctx.clearRect(0,0,W,H);
-
   ctx.strokeStyle = 'rgba(255,255,255,.05)';
   ctx.lineWidth = 1;
   for(let i=0;i<=4;i++){
-    const y = (H-20) * i/4 + 10;
+    const y = (H-20)*i/4 + 10;
     ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
   }
   if(!hist || hist.length < 2) return;
-
   const maxDown = Math.max(1, ...hist.map(h=>h.down));
   const maxLat  = Math.max(50, ...hist.map(h=>h.lat));
   const step = W / Math.max(1, hist.length-1);
-
   const drawLine = (key, max, color) => {
     ctx.strokeStyle = color; ctx.lineWidth = 2;
     ctx.beginPath();
     hist.forEach((h,i)=>{
       const x = i*step;
-      const y = H - 10 - (h[key]/max) * (H-30);
+      const y = H - 10 - (h[key]/max)*(H-30);
       i ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
     });
     ctx.stroke();
   };
-
   drawLine('down', maxDown, '#4ea1ff');
   drawLine('up',   maxDown, '#7c5cff');
   drawLine('lat',  maxLat,  '#ffb02e');
-
   const leg = [['Download','#4ea1ff'],['Upload','#7c5cff'],['Latency','#ffb02e']];
   ctx.font = '11px sans-serif';
   leg.forEach(([t,c],i)=>{
@@ -625,11 +521,9 @@ function drawChart(hist){
 
 const RING_R = 62, RING_C = 2*Math.PI*RING_R;
 function setRing(score){
-  const fg = $('scoreRing');
-  const dash = (score/100) * RING_C;
-  fg.setAttribute('stroke-dasharray', `${dash} ${RING_C}`);
+  $('scoreRing').setAttribute('stroke-dasharray',
+    `${(score/100)*RING_C} ${RING_C}`);
 }
-
 function setBars(n){
   const el = $('bars'); el.innerHTML='';
   for(let i=1;i<=5;i++){
@@ -640,6 +534,7 @@ function setBars(n){
   }
 }
 
+// ============ UI UPDATE ============
 function updateUI(s){
   if(!s || !s.timestamp) return;
   $('scoreVal').textContent = Math.round(s.health_score);
@@ -665,11 +560,8 @@ function updateUI(s){
       const label = {download_mbps:'Download', upload_mbps:'Upload', latency_ms:'Latency'}[p.metric] || p.metric;
       return `<div class="pred-row">
         <span>${label}</span>
-        <span>
-          <b>${p.current}</b> →
-          <b>${p.predicted_10s}</b> ${p.unit}
-          <span class="arrow ${cls}">${arrow} ${p.delta_pct}%</span>
-        </span>
+        <span><b>${p.current}</b> → <b>${p.predicted_10s}</b> ${p.unit}
+          <span class="arrow ${cls}">${arrow} ${p.delta_pct}%</span></span>
       </div>`;
     }).join('');
   }
@@ -678,10 +570,10 @@ function updateUI(s){
   if(s.switch_log && s.switch_log.length){
     sl.innerHTML = s.switch_log.slice().reverse().map(e=>{
       const cls = e.error ? 'error' : (e.executed ? 'ok' : 'warn');
-      const status = e.executed ? '✅ imetekelezwa' : (e.error ? '❌ '+e.error : '💡 mapendekezo');
+      const status = e.executed ? '✅ executed' : (e.error ? '❌ '+e.error : '💡 recommendation');
       return `<div class="log-item ${cls}">
         <span class="ts">${new Date(e.ts).toLocaleTimeString()}</span>
-        <b>${e.from}</b> → <b>${e.to}</b> · ${status}<br>
+        <b>${e.from}</b> → <b>${e.to}</b> · ${status}${e.via ? ' ('+e.via+')' : ''}<br>
         <span style="color:var(--mut)">${e.reason}</span>
       </div>`;
     }).join('');
@@ -711,9 +603,62 @@ function updateUI(s){
     ).join('');
     $('policyMode').value = s.policy.mode;
   }
+
+  // Device pill
+  if(s.devices && s.active_device_id){
+    const active = s.devices.find(d => d.device_id === s.active_device_id);
+    if(active){
+      const pill = $('devicePill');
+      const txt = $('devicePillText');
+      if(active.online){
+        pill.classList.remove('off');
+        txt.textContent = `${active.name} · online`;
+      } else {
+        pill.classList.add('off');
+        txt.textContent = `${active.name} · offline`;
+      }
+    }
+  } else {
+    $('devicePill').classList.add('off');
+    $('devicePillText').textContent = 'No device linked';
+  }
+
+  // Device list
+  if(s.devices){
+    const sel = $('deviceSelect');
+    const cur = sel.value;
+    sel.innerHTML = s.devices.map(d =>
+      `<option value="${d.device_id}" ${d.device_id===s.active_device_id?'selected':''}>
+        ${d.name} ${d.online?'🟢':'🔴'} (${d.device_id})
+      </option>`
+    ).join('') || '<option value="">No devices registered</option>';
+    if(cur) sel.value = cur;
+
+    // Show linked info
+    if(s.active_device_id){
+      const a = s.devices.find(d => d.device_id === s.active_device_id);
+      if(a){
+        const sig = a.signal || {};
+        $('linkedInfo').innerHTML = `
+          <div class="device-badge ${a.online?'':'off'}">
+            ${a.online?'🟢 Online':'🔴 Offline'} · ${a.name}
+          </div>
+          <div class="mt" style="font-size:12px;color:var(--mut)">
+            Last seen: ${a.last_seen || '—'}<br>
+            Operator: ${sig.operator || '—'} · Signal: ${sig.signal_bars ?? 0}/5
+            ${sig.signal_dbm ? `(${sig.signal_dbm} dBm)` : ''}<br>
+            Capabilities: ${Object.entries(a.capabilities||{})
+              .filter(([k,v])=>v).map(([k])=>k).join(', ') || '—'}
+          </div>
+        `;
+      }
+    } else {
+      $('linkedInfo').innerHTML = '';
+    }
+  }
 }
 
-// ---------- WebSocket ----------
+// ============ WEBSOCKET ============
 let ws, retry = 0;
 function connect(){
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -731,17 +676,17 @@ function connect(){
 }
 connect();
 
-// ---------- Actions ----------
+// ============ ACTIONS ============
 $('btnSpeedtest').addEventListener('click', async ()=>{
   const btn = $('btnSpeedtest');
-  btn.disabled = true; $('speedtestOut').textContent = 'Inapima… subiri sekunde ~20';
+  btn.disabled = true; $('speedtestOut').textContent = 'Testing… ~20s';
   try{
     const r = await fetch('/api/speedtest', {method:'POST'});
     const d = await r.json();
     if(d.error) $('speedtestOut').textContent = '⚠️ ' + d.error;
     else $('speedtestOut').textContent =
       `↓ ${d.download_mbps} Mbps  •  ↑ ${d.upload_mbps} Mbps  •  ${d.ping_ms} ms`;
-  }catch(e){ $('speedtestOut').textContent = 'Hitilafu'; }
+  }catch(e){ $('speedtestOut').textContent = 'Error'; }
   btn.disabled = false;
 });
 
@@ -753,7 +698,7 @@ $('btnApplyPolicy').addEventListener('click', async ()=>{
     body: JSON.stringify({mode, active_app: app})
   });
   const d = await r.json();
-  $('policyStatus').textContent = `✅ ${d.mode} imewekwa` + (app ? ` (${app})` : '');
+  $('policyStatus').textContent = `✅ ${d.mode} applied` + (app ? ` (${app})` : '');
 });
 
 $('autoSwitchChk').addEventListener('change', async (e)=>{
@@ -766,7 +711,7 @@ $('autoSwitchChk').addEventListener('change', async (e)=>{
 async function manualSwitch(target){
   await fetch('/api/switch', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({target, reason:'Manual kutoka dashboard'})
+    body: JSON.stringify({target, reason:'Manual from dashboard'})
   });
 }
 
@@ -788,6 +733,50 @@ $('btnScan').addEventListener('click', async ()=>{
 
 $('urlIn').addEventListener('keydown', e=>{
   if(e.key === 'Enter') $('btnScan').click();
+});
+
+// ============ DEVICE LINKING ============
+$('btnRegisterDevice').addEventListener('click', async ()=>{
+  const name = $('newDeviceName').value.trim() || 'My Phone';
+  const r = await fetch('/api/device/register', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name})
+  });
+  const d = await r.json();
+  const host = location.origin;
+  $('registerOutput').innerHTML = `
+    <div class="token-box">
+      <b>Device registered ✓</b><br><br>
+      <b>DEVICE_ID</b> = ${d.device_id}<br>
+      <b>TOKEN</b>     = ${d.token}<br><br>
+      <b>Run this on your phone (Termux):</b><br><br>
+      pip install websockets requests<br>
+      python agent.py --server ${host} \\<br>
+      &nbsp;&nbsp;--device-id ${d.device_id} --token ${d.token}
+    </div>
+  `;
+  $('newDeviceName').value = '';
+});
+
+$('btnLinkDevice').addEventListener('click', async ()=>{
+  const device_id = $('deviceSelect').value;
+  if(!device_id) return;
+  await fetch('/api/device/link', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({device_id})
+  });
+});
+
+$('btnUnlinkDevice').addEventListener('click', async ()=>{
+  await fetch('/api/device/unlink', {method:'POST'});
+});
+
+$('btnRefreshDevices').addEventListener('click', async ()=>{
+  const r = await fetch('/api/device/list');
+  const d = await r.json();
+  // Trigger a re-render by re-fetching state
+  const r2 = await fetch('/api/state');
+  updateUI(await r2.json());
 });
 </script>
 </body>
