@@ -1,25 +1,20 @@
 """
-INTELLILINK X1
-==============
-Network intelligence, prediction & control dashboard.
+IntelliLink X1 — Backend
+Network intelligence, prediction, control, and device management.
 
 Run:
     pip install -r requirements.txt
     python main.py
-Then open:  http://127.0.0.1:8000
 
-Environment variables (optional hooks for real switching):
-    INTELLILINK_CMD_WIFI   e.g. "svc wifi enable"
-    INTELLILINK_CMD_5G     e.g. "svc data enable && settings put global preferred_network_mode 20"
-    INTELLILINK_CMD_4G     e.g. "settings put global preferred_network_mode 9"
-    INTELLILINK_CMD_3G     e.g. "settings put global preferred_network_mode 1"
-    INTELLILINK_PING_HOST  default 8.8.8.8
+Then:
+    Open http://127.0.0.1:8000 (or your Render URL)
 """
 
 import asyncio
 import os
 import platform
 import re
+import secrets
 import statistics
 import time
 from collections import deque
@@ -30,21 +25,24 @@ from urllib.parse import urlparse
 
 import psutil
 import uvicorn
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 try:
-    import speedtest  # from speedtest-cli
+    import speedtest
     HAS_SPEEDTEST = True
 except Exception:
     HAS_SPEEDTEST = False
 
-# ------------------------------------------------------------------
+# ==================================================================
+# CONFIG
+# ==================================================================
 BASE_DIR = Path(__file__).resolve().parent
-APP_NAME = "INTELLILINK X1"
+APP_NAME = "IntelliLink X1"
 PING_HOST = os.getenv("INTELLILINK_PING_HOST", "8.8.8.8")
 
+# Server-side hooks (used when running directly on a Linux host).
 SWITCH_CMDS = {
     "Wi-Fi": os.getenv("INTELLILINK_CMD_WIFI", ""),
     "5G":    os.getenv("INTELLILINK_CMD_5G", ""),
@@ -53,14 +51,43 @@ SWITCH_CMDS = {
 }
 
 # ==================================================================
-# STATE
+# DEVICE REGISTRY (in-memory)
+# ==================================================================
+class Device:
+    def __init__(self, device_id: str, name: str, token: str):
+        self.device_id = device_id
+        self.name = name
+        self.token = token
+        self.agent_ws: Optional[WebSocket] = None
+        self.last_seen: Optional[str] = None
+        self.online: bool = False
+        self.signal: dict = {}          # reported by agent
+        self.capabilities: dict = {}    # what agent can do
+        self.pending: deque = deque(maxlen=50)  # commands waiting for agent
+
+    def to_public(self):
+        return {
+            "device_id": self.device_id,
+            "name": self.name,
+            "online": self.online,
+            "last_seen": self.last_seen,
+            "signal": self.signal,
+            "capabilities": self.capabilities,
+        }
+
+
+DEVICES: dict[str, Device] = {}
+DEVICE_INDEX_BY_TOKEN: dict[str, str] = {}   # token -> device_id
+
+# ==================================================================
+# NETWORK STATE (this server's network — used when running on a host)
 # ==================================================================
 class NetState:
     def __init__(self, window: int = 60):
-        self.down = deque(maxlen=window)   # (ts, Mbps)
-        self.up   = deque(maxlen=window)
-        self.lat  = deque(maxlen=window)   # (ts, ms or None)
-        self.history = deque(maxlen=180)   # snapshots for chart
+        self.down = deque(maxlen=window)
+        self.up = deque(maxlen=window)
+        self.lat = deque(maxlen=window)
+        self.history = deque(maxlen=180)
         self.current = {
             "timestamp": None,
             "download_mbps": 0.0,
@@ -86,6 +113,7 @@ class NetState:
         self.switch_log = deque(maxlen=30)
         self.events = deque(maxlen=80)
         self.threat_scans = deque(maxlen=40)
+        self.active_device_id: Optional[str] = None  # linked phone
 
 
 state = NetState()
@@ -100,10 +128,9 @@ def log_event(level: str, msg: str):
 
 
 # ==================================================================
-# NETWORK DETECTION
+# NETWORK DETECTION (host-side)
 # ==================================================================
 def detect_interface():
-    """Return (friendly_name, iface_name)."""
     try:
         addrs = psutil.net_if_addrs()
         stats = psutil.net_if_stats()
@@ -157,7 +184,7 @@ def io_for(iface: str):
 
 
 # ==================================================================
-# LATENCY (ping)
+# LATENCY
 # ==================================================================
 async def measure_latency(host: str = PING_HOST, timeout: float = 1.5) -> Optional[float]:
     system = platform.system().lower()
@@ -200,12 +227,12 @@ def health_score(down, up, lat, jitter, loss_frac) -> float:
 
 
 def grade(score: float) -> str:
-    if score >= 85: return "A+ — Nzuri sana"
-    if score >= 70: return "A — Nzuri"
-    if score >= 55: return "B — Wastani"
-    if score >= 40: return "C — Hafifu"
-    if score >= 25: return "D — Mbaya"
-    return "F — Mbovu sana"
+    if score >= 85: return "A+ — Excellent"
+    if score >= 70: return "A — Very Good"
+    if score >= 55: return "B — Good"
+    if score >= 40: return "C — Fair"
+    if score >= 25: return "D — Poor"
+    return "F — Very Poor"
 
 
 def bars(score: float) -> int:
@@ -325,8 +352,38 @@ async def sampler():
 
 
 # ==================================================================
-# AUTO SWITCH
+# COMMAND DISPATCH (server → agent)
 # ==================================================================
+async def dispatch_command(command: str, args: dict = None, source: str = "auto"):
+    """Send a command to the linked phone agent."""
+    device_id = state.active_device_id
+    if not device_id:
+        log_event("warn", "No device linked — command dropped")
+        return {"ok": False, "reason": "no_device_linked"}
+
+    dev = DEVICES.get(device_id)
+    if not dev or not dev.online or dev.agent_ws is None:
+        # Queue for later
+        dev and dev.pending.append({"command": command, "args": args or {}, "ts": now_iso()})
+        log_event("warn", f"Agent offline — queued {command}")
+        return {"ok": False, "reason": "agent_offline", "queued": True}
+
+    payload = {
+        "type": "command",
+        "command": command,
+        "args": args or {},
+        "source": source,
+        "ts": now_iso(),
+    }
+    try:
+        await dev.agent_ws.send_json(payload)
+        log_event("info", f"→ Agent: {command} ({source})")
+        return {"ok": True}
+    except Exception as e:
+        log_event("error", f"Send to agent failed: {e}")
+        return {"ok": False, "reason": str(e)}
+
+
 async def trigger_switch(target: str, reason: str):
     entry = {
         "ts": now_iso(),
@@ -335,19 +392,27 @@ async def trigger_switch(target: str, reason: str):
         "reason": reason,
         "executed": False,
     }
-    cmd = SWITCH_CMDS.get(target, "")
-    if cmd:
-        try:
-            proc = await asyncio.create_subprocess_shell(
-                cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            await asyncio.wait_for(proc.communicate(), timeout=10)
-            entry["executed"] = True
-            entry["cmd"] = cmd
-        except Exception as e:
-            entry["error"] = str(e)
+
+    # Try agent first (real phone)
+    if state.active_device_id and DEVICES.get(state.active_device_id, {}).online:
+        res = await dispatch_command("switch_network", {"target": target}, source="auto_switch")
+        entry["executed"] = res.get("ok", False)
+        entry["via"] = "agent"
+    else:
+        # Fallback: server-side shell hook
+        cmd = SWITCH_CMDS.get(target, "")
+        if cmd:
+            try:
+                proc = await asyncio.create_subprocess_shell(
+                    cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                )
+                await asyncio.wait_for(proc.communicate(), timeout=10)
+                entry["executed"] = True
+                entry["via"] = "server_hook"
+            except Exception as e:
+                entry["error"] = str(e)
+        else:
+            entry["via"] = "recommendation"
     state.switch_log.append(entry)
     log_event("warn", f"Switch → {target} ({reason})")
 
@@ -358,7 +423,7 @@ async def auto_switch_check():
     global _last_switch_ts
     if not state.auto_switch:
         return
-    if time.time() - _last_switch_ts < 15:   # cooldown
+    if time.time() - _last_switch_ts < 15:
         return
 
     down_pred = next((p for p in state.predictions if p["metric"] == "download_mbps"), None)
@@ -368,9 +433,7 @@ async def auto_switch_check():
     pred = down_pred["predicted_10s"]
     if cur < 1.0:
         return
-    # Drop > 45% predicted => switch
     if pred < cur * 0.55:
-        # Prefer Wi-Fi if available & command set, else 5G/4G
         if SWITCH_CMDS.get("Wi-Fi"):
             target = "Wi-Fi"
         elif SWITCH_CMDS.get("5G"):
@@ -378,8 +441,8 @@ async def auto_switch_check():
         elif SWITCH_CMDS.get("4G"):
             target = "4G"
         else:
-            target = "5G"  # recommend
-        await trigger_switch(target, f"Kushuka kunatarajiwa: {cur}→{pred} Mbps")
+            target = "5G"
+        await trigger_switch(target, f"Predicted drop: {cur}→{pred} Mbps")
         _last_switch_ts = time.time()
 
 
@@ -409,71 +472,56 @@ def analyze_url(raw: str) -> dict:
     try:
         p = urlparse(u)
     except Exception:
-        return {"url": raw, "risk": 100, "level": "HIGH", "findings": ["URL si sahihi"]}
+        return {"url": raw, "risk": 100, "level": "HIGH", "findings": ["Invalid URL"]}
 
     host = (p.hostname or "").lower()
     path = (p.path or "").lower()
     query = (p.query or "").lower()
     full = u.lower()
 
-    # IP literal
     if re.fullmatch(r"\d{1,3}(\.\d{1,3}){3}", host):
         score += 30
-        findings.append("Host ni IP address (bila domain jina)")
-
-    # @ in URL
+        findings.append("Host is a raw IP address")
     if "@" in full.split("://", 1)[-1].split("/", 1)[0]:
         score += 25
-        findings.append("Alama '@' kwenye URL (inadanganya browser)")
-
-    # Punycode / homoglyph
+        findings.append("'@' in URL (browser spoofing)")
     if "xn--" in host:
         score += 35
-        findings.append("Punycode (xn--) — inaweza kuwa homoglyph attack")
+        findings.append("Punycode (xn--) — possible homoglyph attack")
 
-    # Suspicious TLD
     tld = host.rsplit(".", 1)[-1] if "." in host else ""
     if tld in SUSPICIOUS_TLDS:
         score += 25
-        findings.append(f"TLD ya kutiliwa shaka: .{tld}")
+        findings.append(f"Suspicious TLD: .{tld}")
 
-    # Phishing keywords
     hits = [w for w in PHISH_WORDS if w in host or w in path or w in query]
     if hits:
         score += min(20, 6 * len(hits))
-        findings.append("Maneno ya phishing: " + ", ".join(hits[:5]))
+        findings.append("Phishing keywords: " + ", ".join(hits[:5]))
 
-    # Brand lookalike
     for b in BRANDS:
         if b in host and not host.endswith(b + ".com") and b + ".com" not in host:
             score += 20
-            findings.append(f"Inaonekana kujifanya brand: {b}")
+            findings.append(f"Possible brand impersonation: {b}")
             break
 
-    # Excessive subdomains
     if host.count(".") >= 4:
         score += 15
-        findings.append("Subdomains nyingi kupita kiasi")
-
-    # Non-standard port
+        findings.append("Excessive subdomains")
     if p.port and p.port not in (80, 443, 8080, 8443):
         score += 10
-        findings.append(f"Port isiyo ya kawaida: {p.port}")
-
-    # Long URL
+        findings.append(f"Unusual port: {p.port}")
     if len(u) > 120:
         score += 10
-        findings.append("URL ndefu kupita kiasi")
-
-    # HTTP (no TLS)
+        findings.append("Unusually long URL")
     if p.scheme == "http":
         score += 8
-        findings.append("HTTP (bila encryption)")
+        findings.append("HTTP (no encryption)")
 
     score = min(100, score)
     level = "LOW" if score < 30 else "MEDIUM" if score < 60 else "HIGH"
     if not findings:
-        findings.append("Hakuna dalili za hatari zilizoonekana")
+        findings.append("No obvious risk indicators")
 
     return {"url": raw, "risk": score, "level": level, "findings": findings}
 
@@ -487,7 +535,7 @@ app = FastAPI(title=APP_NAME)
 @app.on_event("startup")
 async def _startup():
     asyncio.create_task(sampler())
-    log_event("info", f"{APP_NAME} imeanza. Ping host: {PING_HOST}")
+    log_event("info", f"{APP_NAME} started. Ping host: {PING_HOST}")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -506,9 +554,155 @@ async def api_state():
         "events": list(state.events)[-30:],
         "history": list(state.history)[-90:],
         "threat_scans": list(state.threat_scans)[-10:],
+        "devices": [d.to_public() for d in DEVICES.values()],
+        "active_device_id": state.active_device_id,
     })
 
 
+# ---------- Device Management ----------
+class RegisterDevice(BaseModel):
+    name: str
+
+
+@app.post("/api/device/register")
+async def api_device_register(body: RegisterDevice):
+    device_id = secrets.token_hex(4)
+    token = secrets.token_urlsafe(24)
+    dev = Device(device_id, body.name.strip() or "My Phone", token)
+    DEVICES[device_id] = dev
+    DEVICE_INDEX_BY_TOKEN[token] = device_id
+    log_event("info", f"Device registered: {dev.name} ({device_id})")
+    return {
+        "device_id": device_id,
+        "name": dev.name,
+        "token": token,
+        "agent_url_ws": f"/ws/agent/{device_id}?token={token}",
+    }
+
+
+class LinkDevice(BaseModel):
+    device_id: str
+
+
+@app.post("/api/device/link")
+async def api_device_link(body: LinkDevice):
+    if body.device_id not in DEVICES:
+        raise HTTPException(404, "Device not found")
+    state.active_device_id = body.device_id
+    log_event("info", f"Active device → {DEVICES[body.device_id].name}")
+    return {"active_device_id": state.active_device_id}
+
+
+@app.post("/api/device/unlink")
+async def api_device_unlink():
+    state.active_device_id = None
+    log_event("info", "Device unlinked")
+    return {"active_device_id": None}
+
+
+@app.get("/api/device/list")
+async def api_device_list():
+    return {"devices": [d.to_public() for d in DEVICES.values()],
+            "active_device_id": state.active_device_id}
+
+
+# ---------- Agent WebSocket ----------
+@app.websocket("/ws/agent/{device_id}")
+async def ws_agent(websocket: WebSocket, device_id: str, token: str = ""):
+    dev = DEVICES.get(device_id)
+    if not dev or dev.token != token:
+        await websocket.close(code=1008)
+        return
+
+    await websocket.accept()
+    dev.agent_ws = websocket
+    dev.online = True
+    dev.last_seen = now_iso()
+    log_event("info", f"Agent connected: {dev.name}")
+
+    # Flush pending commands
+    try:
+        while dev.pending:
+            item = dev.pending.popleft()
+            await websocket.send_json({"type": "command", **item})
+    except Exception:
+        pass
+
+    try:
+        while True:
+            msg = await websocket.receive_json()
+            mtype = msg.get("type")
+            dev.last_seen = now_iso()
+
+            if mtype == "telemetry":
+                dev.signal = msg.get("data", {})
+                # Merge agent's network info into dashboard
+                data = dev.signal
+                if "network_type" in data:
+                    state.current["network_type"] = data["network_type"]
+                if "generation" in data:
+                    state.current["generation"] = data["generation"]
+                if "signal_bars" in data:
+                    state.current["signal_bars"] = data["signal_bars"]
+
+            elif mtype == "capabilities":
+                dev.capabilities = msg.get("data", {})
+                log_event("info", f"Capabilities from {dev.name}: {list(dev.capabilities.keys())}")
+
+            elif mtype == "command_result":
+                cmd = msg.get("command", "?")
+                ok = msg.get("ok", False)
+                detail = msg.get("detail", "")
+                log_event("info" if ok else "warn",
+                          f"← Agent {cmd}: {'OK' if ok else 'FAIL'} {detail}")
+                # Log switch if it was a switch command
+                if cmd == "switch_network":
+                    state.switch_log.append({
+                        "ts": now_iso(),
+                        "from": state.current["network_type"],
+                        "to": msg.get("args", {}).get("target", "?"),
+                        "reason": f"Agent executed ({'OK' if ok else 'FAIL'})",
+                        "executed": ok,
+                        "via": "agent",
+                        "detail": detail,
+                    })
+
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        log_event("error", f"Agent WS error: {e}")
+    finally:
+        dev.online = False
+        dev.agent_ws = None
+        dev.last_seen = now_iso()
+        log_event("warn", f"Agent disconnected: {dev.name}")
+
+
+# ---------- Dashboard WebSocket ----------
+@app.websocket("/ws")
+async def ws_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            await websocket.send_json({
+                **state.current,
+                "predictions": state.predictions,
+                "policy": state.policy,
+                "auto_switch": state.auto_switch,
+                "switch_log": list(state.switch_log)[-15:],
+                "events": list(state.events)[-20:],
+                "history": list(state.history)[-90:],
+                "devices": [d.to_public() for d in DEVICES.values()],
+                "active_device_id": state.active_device_id,
+            })
+            await asyncio.sleep(1)
+    except WebSocketDisconnect:
+        return
+    except Exception:
+        return
+
+
+# ---------- Control endpoints ----------
 class SwitchCmd(BaseModel):
     target: str
     reason: Optional[str] = "Manual"
@@ -552,6 +746,12 @@ async def api_policy(body: PolicyIn):
     state.policy["allocations"] = POLICY_TABLE[mode]
     state.policy["background_blocked"] = mode in ("video", "download")
     log_event("info", f"Policy = {mode} (app: {body.active_app or '—'})")
+
+    # Ask agent to apply if it supports it
+    if state.active_device_id:
+        await dispatch_command("apply_policy", {
+            "mode": mode, "active_app": body.active_app
+        }, source="policy")
     return state.policy
 
 
@@ -574,7 +774,7 @@ async def api_scan_url(body: UrlIn):
 async def api_speedtest():
     if not HAS_SPEEDTEST:
         return JSONResponse(
-            {"error": "speedtest-cli haipo. Endesha: pip install speedtest-cli"},
+            {"error": "speedtest-cli missing. Run: pip install speedtest-cli"},
             status_code=503,
         )
 
@@ -600,25 +800,17 @@ async def api_speedtest():
     }
 
 
-@app.websocket("/ws")
-async def ws_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    try:
-        while True:
-            await websocket.send_json({
-                **state.current,
-                "predictions": state.predictions,
-                "policy": state.policy,
-                "auto_switch": state.auto_switch,
-                "switch_log": list(state.switch_log)[-15:],
-                "events": list(state.events)[-20:],
-                "history": list(state.history)[-90:],
-            })
-            await asyncio.sleep(1)
-    except WebSocketDisconnect:
-        return
-    except Exception:
-        return
+# ---------- Remote agent commands ----------
+class AgentCmd(BaseModel):
+    command: str
+    args: dict = {}
+
+
+@app.post("/api/agent/command")
+async def api_agent_command(body: AgentCmd):
+    """Send an arbitrary command to the linked phone agent."""
+    res = await dispatch_command(body.command, body.args, source="manual")
+    return res
 
 
 if __name__ == "__main__":
