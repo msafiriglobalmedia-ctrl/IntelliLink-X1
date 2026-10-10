@@ -1,253 +1,143 @@
-/* ============================================================
+/* =========================================================
    INTELLILINK X1
-   ============================================================
-   Frontend Application Controller
-   File: static/app.js
+   AI-POWERED PREDICTIVE MULTI-CONNECTIVITY
+   NETWORK MANAGEMENT SYSTEM
 
-   Product:
-       IntelliLink X1
-
-   Developer:
-       MSAFIRI GROUP
-
-   Backend:
-       FastAPI
-
-   API:
-       /health
-       /api/v1
-       /api/v1/device
-       /api/v1/network
-       /api/v1/wifi
-       /api/v1/network/latency
-       /api/v1/network/snapshot
-       /api/v1/network/score
-       /api/v1/diagnostics
-       /api/v1/status
-       /api/v1/speed-test
-
-   IMPORTANT:
-       This frontend never invents network measurements.
-       Missing measurements are displayed as N/A.
-   ============================================================ */
+   Developer: MSAFIRI GROUP
+   Version: 0.1.0
+   Backend: FastAPI
+   ========================================================= */
 
 "use strict";
 
-/* ============================================================
+/* =========================================================
    CONFIGURATION
-   ============================================================ */
+   ========================================================= */
 
-const APP_CONFIG = {
+const ILX = {
     name: "IntelliLink X1",
     version: "0.1.0",
-
-    apiBase: "/api/v1",
-
-    requestTimeout: 15000,
-
+    api: "/api/v1",
     refreshInterval: 20000,
-
-    healthInterval: 10000
+    requestTimeout: 12000
 };
 
 
-/* ============================================================
+/* =========================================================
    APPLICATION STATE
-   ============================================================ */
+   ========================================================= */
 
 const state = {
-    initialized: false,
-
-    loading: false,
-
-    currentSection: "dashboard",
-
-    health: null,
-
+    currentPage: "dashboard",
     device: null,
-
     network: null,
-
-    wifi: null,
-
     snapshot: null,
-
     diagnostics: null,
-
     speedTest: null,
-
-    lastUpdate: null,
-
-    refreshTimer: null,
-
-    healthTimer: null
+    isRefreshing: false,
+    isDiagnosing: false,
+    isTestingSpeed: false,
+    initialized: false,
+    refreshTimer: null
 };
 
 
-/* ============================================================
+/* =========================================================
    DOM HELPERS
-   ============================================================ */
+   ========================================================= */
 
 function $(id) {
     return document.getElementById(id);
 }
 
 
-function setText(id, value) {
+function setText(id, value, fallback = "N/A") {
     const element = $(id);
 
-    if (!element) {
+    if (!element) return;
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        element.textContent = fallback;
         return;
     }
 
-    element.textContent = value;
+    element.textContent = String(value);
 }
 
 
 function setHTML(id, value) {
     const element = $(id);
 
-    if (!element) {
-        return;
-    }
+    if (!element) return;
 
     element.innerHTML = value;
 }
 
 
-function showElement(id) {
-    const element = $(id);
+function showElement(element) {
+    if (!element) return;
 
-    if (!element) {
-        return;
-    }
-
+    element.hidden = false;
     element.style.display = "";
 }
 
 
-function hideElement(id) {
-    const element = $(id);
+function hideElement(element) {
+    if (!element) return;
 
-    if (!element) {
-        return;
-    }
-
-    element.style.display = "none";
+    element.hidden = true;
 }
 
 
-/* ============================================================
-   VALUE FORMATTERS
-   ============================================================ */
-
-function isValidValue(value) {
-    return (
-        value !== null &&
-        value !== undefined &&
-        value !== "" &&
-        value !== "null" &&
-        value !== "undefined"
-    );
-}
-
-
-function displayValue(value, fallback = "N/A") {
-    return isValidValue(value) ? String(value) : fallback;
-}
-
-
-function formatNumber(value, decimals = 0) {
-    if (!isValidValue(value)) {
+function formatNumber(value, decimals = 1) {
+    if (
+        value === null ||
+        value === undefined ||
+        !Number.isFinite(Number(value))
+    ) {
         return "N/A";
     }
 
-    const number = Number(value);
-
-    if (!Number.isFinite(number)) {
-        return "N/A";
-    }
-
-    return number.toFixed(decimals);
+    return Number(value).toFixed(decimals);
 }
 
 
 function formatMilliseconds(value) {
-    if (!isValidValue(value)) {
-        return "N/A";
-    }
-
     const number = Number(value);
 
-    if (!Number.isFinite(number)) {
+    if (
+        value === null ||
+        value === undefined ||
+        !Number.isFinite(number)
+    ) {
         return "N/A";
     }
 
-    return `${Math.round(number)} ms`;
-}
-
-
-function formatPercentage(value) {
-    if (!isValidValue(value)) {
-        return "N/A";
-    }
-
-    const number = Number(value);
-
-    if (!Number.isFinite(number)) {
-        return "N/A";
-    }
-
-    return `${Math.round(number)}%`;
+    return `${formatNumber(number, 1)} ms`;
 }
 
 
 function formatMbps(value) {
-    if (!isValidValue(value)) {
-        return "N/A";
-    }
-
     const number = Number(value);
 
-    if (!Number.isFinite(number)) {
+    if (
+        value === null ||
+        value === undefined ||
+        !Number.isFinite(number)
+    ) {
         return "N/A";
     }
 
-    return `${number.toFixed(2)} Mbps`;
+    return `${formatNumber(number, 2)} Mbps`;
 }
 
 
-function formatBytes(value) {
-    if (!isValidValue(value)) {
-        return "N/A";
-    }
-
-    const number = Number(value);
-
-    if (!Number.isFinite(number)) {
-        return "N/A";
-    }
-
-    if (number < 1024) {
-        return `${number} B`;
-    }
-
-    if (number < 1024 * 1024) {
-        return `${(number / 1024).toFixed(1)} KB`;
-    }
-
-    if (number < 1024 * 1024 * 1024) {
-        return `${(number / (1024 * 1024)).toFixed(1)} MB`;
-    }
-
-    return `${(number / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-}
-
-
-function formatDate(value) {
-    if (!isValidValue(value)) {
-        return "N/A";
-    }
+function formatTimestamp(value) {
+    if (!value) return "--";
 
     const date = new Date(value);
 
@@ -255,42 +145,33 @@ function formatDate(value) {
         return String(value);
     }
 
-    return date.toLocaleString();
+    return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    });
 }
 
 
-/* ============================================================
-   API REQUEST ENGINE
-   ============================================================ */
+/* =========================================================
+   SAFE API REQUESTS
+   ========================================================= */
 
-async function apiRequest(
-    path,
-    options = {},
-    timeout = APP_CONFIG.requestTimeout
-) {
+async function apiRequest(path, options = {}) {
     const controller = new AbortController();
 
-    const timer = setTimeout(() => {
+    const timeout = setTimeout(() => {
         controller.abort();
-    }, timeout);
+    }, ILX.requestTimeout);
 
     try {
         const response = await fetch(path, {
             ...options,
-
+            signal: controller.signal,
             headers: {
-                "Accept": "application/json",
-
-                ...(options.body
-                    ? {
-                        "Content-Type": "application/json"
-                    }
-                    : {}),
-
+                Accept: "application/json",
                 ...(options.headers || {})
-            },
-
-            signal: controller.signal
+            }
         });
 
         const contentType =
@@ -301,2054 +182,1331 @@ async function apiRequest(
         if (contentType.includes("application/json")) {
             data = await response.json();
         } else {
-            const text = await response.text();
-
-            data = {
-                message: text
-            };
+            data = await response.text();
         }
 
         if (!response.ok) {
-            const message =
-                data?.detail ||
-                data?.message ||
-                `HTTP ${response.status}`;
+            const detail =
+                typeof data === "object" && data !== null
+                    ? data.detail || data.message || data.error
+                    : data;
 
-            throw new Error(message);
+            throw new Error(
+                detail || `HTTP ${response.status}`
+            );
         }
 
         return data;
 
     } catch (error) {
-
         if (error.name === "AbortError") {
-            throw new Error("Request timed out");
+            throw new Error(
+                "Ombi limechukua muda mrefu kujibu. Jaribu tena."
+            );
         }
 
         throw error;
 
     } finally {
-        clearTimeout(timer);
+        clearTimeout(timeout);
     }
 }
 
 
-/* ============================================================
-   TOAST SYSTEM
-   ============================================================ */
+async function apiGet(path) {
+    return apiRequest(path, {
+        method: "GET",
+        cache: "no-store"
+    });
+}
 
-let toastTimer = null;
 
+/* =========================================================
+   TOAST NOTIFICATIONS
+   ========================================================= */
 
-function showToast(title, message, type = "info") {
+function showToast(
+    title,
+    message,
+    type = "info"
+) {
     const toast = $("toast");
 
     if (!toast) {
+        console.log(`[${type}] ${title}: ${message}`);
         return;
     }
 
     setText("toastTitle", title);
     setText("toastMessage", message);
 
-    toast.classList.remove(
-        "success",
-        "error",
-        "warning",
-        "info",
-        "show"
-    );
+    toast.dataset.type = type;
 
-    toast.classList.add(type);
+    showElement(toast);
+
+    toast.classList.remove("show");
 
     requestAnimationFrame(() => {
         toast.classList.add("show");
     });
 
-    if (toastTimer) {
-        clearTimeout(toastTimer);
-    }
+    clearTimeout(showToast.timer);
 
-    toastTimer = setTimeout(() => {
+    showToast.timer = setTimeout(() => {
         toast.classList.remove("show");
     }, 4000);
 }
 
 
-/* ============================================================
+/* =========================================================
    LOADING OVERLAY
-   ============================================================ */
+   ========================================================= */
 
 function showLoading(message = "Loading IntelliLink X1...") {
     const overlay = $("loadingOverlay");
 
-    if (!overlay) {
-        return;
-    }
+    if (!overlay) return;
 
     setText("loadingMessage", message);
 
-    overlay.classList.add("show");
+    showElement(overlay);
 }
 
 
 function hideLoading() {
     const overlay = $("loadingOverlay");
 
-    if (!overlay) {
+    if (!overlay) return;
+
+    hideElement(overlay);
+}
+
+
+/* =========================================================
+   SPLASH SCREEN
+   ========================================================= */
+
+function runSplashScreen() {
+    const splash = $("splashScreen");
+
+    if (!splash) {
+        document.body.classList.add("app-ready");
         return;
     }
 
-    overlay.classList.remove("show");
-}
+    document.body.classList.add("splash-active");
 
+    splash.classList.remove("splash-hidden");
 
-/* ============================================================
-   HEALTH
-   ============================================================ */
+    splash.setAttribute("aria-hidden", "false");
 
-async function loadHealth() {
-    try {
-        const data = await apiRequest("/health");
+    // Ensure the animation is restarted on a fresh page load.
+    const logo = $("splashLogo");
 
-        state.health = data;
+    if (logo) {
+        logo.classList.remove("logo-animate");
 
-        updateHealthUI(data);
+        void logo.offsetWidth;
 
-        return data;
+        logo.classList.add("logo-animate");
+    }
 
-    } catch (error) {
+    const minimumDuration = 2200;
 
-        updateOfflineState();
+    const maximumDuration = 3800;
 
-        console.warn(
-            "IntelliLink health check failed:",
-            error.message
+    const start = Date.now();
+
+    const finishSplash = () => {
+        const elapsed = Date.now() - start;
+
+        const remaining = Math.max(
+            0,
+            minimumDuration - elapsed
         );
 
-        return null;
-    }
-}
+        setTimeout(() => {
+            splash.classList.add("splash-hidden");
 
+            splash.setAttribute("aria-hidden", "true");
 
-function updateHealthUI(data) {
-    if (!data) {
-        return;
-    }
+            document.body.classList.remove("splash-active");
 
-    const status =
-        data.status ||
-        data.state ||
-        "healthy";
+            document.body.classList.add("app-ready");
 
-    const normalized = String(status).toLowerCase();
+            setTimeout(() => {
+                splash.style.display = "none";
+            }, 700);
 
-    const healthy =
-        normalized === "ok" ||
-        normalized === "healthy" ||
-        normalized === "online" ||
-        normalized === "running";
+        }, remaining);
+    };
 
-    const dot = $("connectionDot");
-
-    if (dot) {
-        dot.classList.toggle("online", healthy);
-        dot.classList.toggle("offline", !healthy);
-    }
-
-    setText(
-        "systemStatus",
-        healthy ? "System Online" : "System Warning"
+    // The splash should not trap the user if an API is slow.
+    const safetyTimer = setTimeout(
+        finishSplash,
+        maximumDuration
     );
 
-    setText(
-        "liveDot",
-        healthy ? "LIVE" : "OFFLINE"
+    window.addEventListener(
+        "load",
+        () => {
+            clearTimeout(safetyTimer);
+            finishSplash();
+        },
+        { once: true }
     );
 }
 
 
-function updateOfflineState() {
-    setText("systemStatus", "Backend Offline");
-    setText("liveDot", "OFFLINE");
+/* =========================================================
+   PAGE NAVIGATION
+   ========================================================= */
 
-    const dot = $("connectionDot");
+function normalizePageName(name) {
+    const value = String(name || "")
+        .trim()
+        .toLowerCase();
 
-    if (dot) {
-        dot.classList.remove("online");
-        dot.classList.add("offline");
-    }
+    const allowed = [
+        "dashboard",
+        "network",
+        "diagnostics",
+        "device"
+    ];
+
+    return allowed.includes(value)
+        ? value
+        : "dashboard";
 }
 
 
-/* ============================================================
-   DEVICE
-   ============================================================ */
+function showPage(pageName) {
+    const page = normalizePageName(pageName);
 
-async function loadDevice() {
-    try {
-        const data = await apiRequest(
-            `${APP_CONFIG.apiBase}/device`
-        );
+    state.currentPage = page;
 
-        state.device = data;
-
-        updateDeviceUI(data);
-
-        return data;
-
-    } catch (error) {
-
-        console.error(
-            "Device information error:",
-            error
-        );
-
-        showToast(
-            "Device",
-            "Unable to load device information.",
-            "error"
-        );
-
-        return null;
-    }
-}
-
-
-function updateDeviceUI(data) {
-    if (!data) {
-        return;
-    }
-
-    /*
-     * Some APIs return:
-     *
-     * {
-     *   "device": {...}
-     * }
-     *
-     * while others return the device directly.
-     */
-
-    const device = data.device || data;
-
-    setText(
-        "deviceStatus",
-        displayValue(
-            device.status ||
-            device.device_status ||
-            "ACTIVE"
-        )
+    const sections = document.querySelectorAll(
+        "[data-page], .page-section, .app-section"
     );
 
-    setText(
-        "modelNumber",
-        displayValue(
-            device.model_number ||
-            device.model ||
-            device.modelNumber
-        )
-    );
-
-    setText(
-        "serialNumber",
-        displayValue(
-            device.serial_number ||
-            device.serialNumber
-        )
-    );
-
-    setText(
-        "deviceID",
-        displayValue(
-            device.device_id ||
-            device.deviceID ||
-            device.id
-        )
-    );
-
-    setText(
-        "deviceUUID",
-        displayValue(
-            device.device_uuid ||
-            device.deviceUUID ||
-            device.uuid
-        )
-    );
-
-    setText(
-        "smartCardNumber",
-        displayValue(
-            device.smart_card_number ||
-            device.smartCardNumber ||
-            device.smart_card_id
-        )
-    );
-
-    setText(
-        "hardwareRevision",
-        displayValue(
-            device.hardware_revision ||
-            device.hardwareRevision
-        )
-    );
-
-    setText(
-        "firmwareVersion",
-        displayValue(
-            device.firmware_version ||
-            device.firmwareVersion
-        )
-    );
-
-    setText(
-        "softwareVersion",
-        displayValue(
-            device.software_version ||
-            device.softwareVersion ||
-            APP_CONFIG.version
-        )
-    );
-
-    setText(
-        "manufacturer",
-        displayValue(
-            device.manufacturer
-        )
-    );
-
-    setText(
-        "countryCode",
-        displayValue(
-            device.country_code ||
-            device.countryCode
-        )
-    );
-
-    setText(
-        "timezone",
-        displayValue(
-            device.timezone
-        )
-    );
-
-    setText(
-        "deviceType",
-        displayValue(
-            device.device_type ||
-            device.deviceType
-        )
-    );
-
-    setText(
-        "platformSystem",
-        displayValue(
-            device.platform_system ||
-            device.platformSystem ||
-            device.system
-        )
-    );
-
-    setText(
-        "platformRelease",
-        displayValue(
-            device.platform_release ||
-            device.platformRelease ||
-            device.release
-        )
-    );
-
-    setText(
-        "platformArchitecture",
-        displayValue(
-            device.platform_architecture ||
-            device.platformArchitecture ||
-            device.architecture
-        )
-    );
-
-    setText(
-        "platformPython",
-        displayValue(
-            device.platform_python ||
-            device.platformPython ||
-            device.python_version
-        )
-    );
-}
-
-
-/* ============================================================
-   NETWORK
-   ============================================================ */
-
-async function loadNetwork() {
-    try {
-        const data = await apiRequest(
-            `${APP_CONFIG.apiBase}/network`
-        );
-
-        state.network = data;
-
-        updateNetworkUI(data);
-
-        return data;
-
-    } catch (error) {
-
-        console.error(
-            "Network information error:",
-            error
-        );
-
-        updateNetworkErrorUI();
-
-        return null;
-    }
-}
-
-
-function updateNetworkUI(data) {
-    if (!data) {
-        return;
-    }
-
-    const network = data.network || data;
-
-    setText(
-        "networkType",
-        displayValue(
-            network.type ||
-            network.connection_type ||
-            network.connectionType
-        )
-    );
-
-    setText(
-        "networkName",
-        displayValue(
-            network.name ||
-            network.ssid ||
-            network.network_name ||
-            network.networkName
-        )
-    );
-
-    setText(
-        "networkIP",
-        displayValue(
-            network.local_ip ||
-            network.ip ||
-            network.ip_address ||
-            network.ipAddress
-        )
-    );
-
-    setText(
-        "networkGateway",
-        displayValue(
-            network.gateway ||
-            network.default_gateway ||
-            network.defaultGateway
-        )
-    );
-
-    setText(
-        "networkInterface",
-        displayValue(
-            network.interface ||
-            network.interface_name ||
-            network.interfaceName ||
-            network.network_interface
-        )
-    );
-
-    setText(
-        "networkConnectionStatus",
-        displayValue(
-            network.status ||
-            network.connection_status ||
-            network.connectionStatus
-        )
-    );
-
-    const connectionType =
-        network.type ||
-        network.connection_type ||
-        network.connectionType;
-
-    const ssid =
-        network.ssid ||
-        network.name ||
-        network.network_name;
-
-    setText(
-        "connectionType",
-        displayValue(connectionType)
-    );
-
-    setText(
-        "wifiSSID",
-        displayValue(ssid)
-    );
-
-    setText(
-        "ipAddress",
-        displayValue(
-            network.local_ip ||
-            network.ip ||
-            network.ip_address
-        )
-    );
-}
-
-
-function updateNetworkErrorUI() {
-    setText("networkConnectionStatus", "Unavailable");
-    setText("connectionType", "N/A");
-    setText("wifiSSID", "N/A");
-    setText("ipAddress", "N/A");
-}
-
-
-/* ============================================================
-   WI-FI
-   ============================================================ */
-
-async function loadWifi() {
-    try {
-        const data = await apiRequest(
-            `${APP_CONFIG.apiBase}/wifi`
-        );
-
-        state.wifi = data;
-
-        updateWifiUI(data);
-
-        return data;
-
-    } catch (error) {
-
-        console.warn(
-            "Wi-Fi information unavailable:",
-            error.message
-        );
-
-        updateWifiErrorUI();
-
-        return null;
-    }
-}
-
-
-function updateWifiUI(data) {
-    if (!data) {
-        return;
-    }
-
-    const wifi = data.wifi || data;
-
-    const available =
-        wifi.available ??
-        wifi.is_available ??
-        wifi.connected ??
-        null;
-
-    const ssid =
-        wifi.ssid ||
-        wifi.name ||
-        wifi.network_name ||
-        null;
-
-    setText(
-        "wifiSSID",
-        displayValue(ssid)
-    );
-
-    if (available === true) {
-        setText("wifiStatus", "Connected");
-    } else if (available === false) {
-        setText("wifiStatus", "Unavailable");
-    } else {
-        setText(
-            "wifiStatus",
-            displayValue(
-                wifi.status,
-                "N/A"
-            )
-        );
-    }
-
-    const signal =
-        wifi.signal ||
-        wifi.signal_strength ||
-        wifi.signalStrength ||
-        wifi.rssi ||
-        null;
-
-    setText(
-        "signalValue",
-        isValidValue(signal)
-            ? `${signal}`
-            : "N/A"
-    );
-}
-
-
-function updateWifiErrorUI() {
-    setText("wifiSSID", "N/A");
-    setText("wifiStatus", "Unavailable");
-    setText("signalValue", "N/A");
-}
-
-
-/* ============================================================
-   NETWORK SNAPSHOT
-   ============================================================ */
-
-async function loadNetworkSnapshot() {
-    try {
-        const data = await apiRequest(
-            `${APP_CONFIG.apiBase}/network/snapshot`,
-            {},
-            20000
-        );
-
-        state.snapshot = data;
-
-        updateSnapshotUI(data);
-
-        return data;
-
-    } catch (error) {
-
-        console.error(
-            "Network snapshot error:",
-            error
-        );
-
-        showToast(
-            "Network",
-            "Unable to collect network snapshot.",
-            "warning"
-        );
-
-        return null;
-    }
-}
-
-
-function updateSnapshotUI(data) {
-    if (!data) {
-        return;
-    }
-
-    /*
-     * Snapshot can be nested or direct.
-     */
-
-    const snapshot =
-        data.snapshot ||
-        data;
-
-    const latency =
-        snapshot.latency_ms ??
-        snapshot.latency ??
-        data.latency_ms ??
-        data.latency;
-
-    const jitter =
-        snapshot.jitter_ms ??
-        snapshot.jitter ??
-        data.jitter_ms ??
-        data.jitter;
-
-    const packetLoss =
-        snapshot.packet_loss ??
-        snapshot.packet_loss_percent ??
-        snapshot.packetLoss ??
-        data.packet_loss ??
-        data.packet_loss_percent;
-
-    const signal =
-        snapshot.signal ??
-        snapshot.signal_strength ??
-        snapshot.rssi ??
-        data.signal ??
-        data.signal_strength;
-
-    const download =
-        snapshot.download_mbps ??
-        snapshot.download_speed ??
-        snapshot.download ??
-        data.download_mbps;
-
-    const upload =
-        snapshot.upload_mbps ??
-        snapshot.upload_speed ??
-        snapshot.upload ??
-        data.upload_mbps;
-
-    setText(
-        "latencyValue",
-        formatMilliseconds(latency)
-    );
-
-    setText(
-        "jitterValue",
-        formatMilliseconds(jitter)
-    );
-
-    setText(
-        "packetLossValue",
-        formatPercentage(packetLoss)
-    );
-
-    setText(
-        "signalValue",
-        displayValue(signal)
-    );
-
-    setText(
-        "downloadSpeed",
-        formatMbps(download)
-    );
-
-    setText(
-        "uploadSpeed",
-        formatMbps(upload)
-    );
-}
-
-
-/* ============================================================
-   NETWORK SCORE
-   ============================================================ */
-
-async function loadNetworkScore() {
-    try {
-        const data = await apiRequest(
-            `${APP_CONFIG.apiBase}/network/score`
-        );
-
-        updateNetworkScoreUI(data);
-
-        return data;
-
-    } catch (error) {
-
-        console.warn(
-            "Network score unavailable:",
-            error.message
-        );
-
-        return null;
-    }
-}
-
-
-function extractScore(data) {
-    if (!data) {
-        return null;
-    }
-
-    return (
-        data.score ??
-        data.network_score ??
-        data.networkScore ??
-        data.total_score ??
-        data.value ??
-        data.result?.score ??
-        null
-    );
-}
-
-
-function getQualityFromScore(score) {
-    if (!Number.isFinite(score)) {
-        return "UNKNOWN";
-    }
-
-    if (score >= 90) {
-        return "EXCELLENT";
-    }
-
-    if (score >= 75) {
-        return "GOOD";
-    }
-
-    if (score >= 50) {
-        return "FAIR";
-    }
-
-    if (score >= 25) {
-        return "POOR";
-    }
-
-    return "CRITICAL";
-}
-
-
-function updateNetworkScoreUI(data) {
-    const rawScore = extractScore(data);
-
-    if (!isValidValue(rawScore)) {
-        setText("networkScore", "N/A");
-        setText("networkQuality", "UNKNOWN");
-
-        const bar = $("scoreBar");
-
-        if (bar) {
-            bar.style.width = "0%";
+    sections.forEach(section => {
+        const sectionPage =
+            section.dataset.page ||
+            section.id.replace(/^page-/, "").replace(/-section$/, "");
+
+        if (
+            sectionPage === page ||
+            section.id === page ||
+            section.id === `${page}-section` ||
+            section.id === `page-${page}`
+        ) {
+            section.hidden = false;
+
+            section.classList.add("active");
+
+            section.setAttribute("aria-hidden", "false");
+        } else {
+            section.hidden = true;
+
+            section.classList.remove("active");
+
+            section.setAttribute("aria-hidden", "true");
         }
+    });
 
-        return;
+    // Support navigation links using data-page-target.
+    document.querySelectorAll(
+        "[data-page-target]"
+    ).forEach(button => {
+        const active =
+            button.dataset.pageTarget === page;
+
+        button.classList.toggle("active", active);
+
+        if (active) {
+            button.setAttribute("aria-current", "page");
+        } else {
+            button.removeAttribute("aria-current");
+        }
+    });
+
+    // Support buttons and links with data-page.
+    document.querySelectorAll(
+        "[data-nav-page]"
+    ).forEach(button => {
+        button.classList.toggle(
+            "active",
+            button.dataset.navPage === page
+        );
+    });
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+    if (page === "network") {
+        loadNetworkPage();
     }
 
-    const score = Number(rawScore);
-
-    if (!Number.isFinite(score)) {
-        setText("networkScore", "N/A");
-        return;
+    if (page === "device") {
+        loadDevice();
     }
 
-    const safeScore = Math.max(
-        0,
-        Math.min(100, score)
+    if (page === "diagnostics") {
+        loadDiagnosticsSummary();
+    }
+}
+
+
+function initializeNavigation() {
+    document.addEventListener("click", event => {
+        const button = event.target.closest(
+            "[data-page-target], [data-nav-page]"
+        );
+
+        if (!button) return;
+
+        const target =
+            button.dataset.pageTarget ||
+            button.dataset.navPage;
+
+        if (!target) return;
+
+        event.preventDefault();
+
+        showPage(target);
+    });
+
+    // Support common existing navigation IDs.
+    const fallbackNavigation = {
+        "nav-dashboard": "dashboard",
+        "nav-network": "network",
+        "nav-diagnostics": "diagnostics",
+        "nav-device": "device"
+    };
+
+    Object.entries(fallbackNavigation).forEach(
+        ([id, page]) => {
+            const element = $(id);
+
+            if (!element) return;
+
+            element.addEventListener("click", event => {
+                event.preventDefault();
+                showPage(page);
+            });
+        }
     );
+}
 
-    const quality =
-        data.quality ||
-        data.network_quality ||
-        getQualityFromScore(safeScore);
+
+/* =========================================================
+   NETWORK SCORE
+   ========================================================= */
+
+function updateNetworkScore(data) {
+    if (!data) return;
+
+    const score = Number(data.score);
+
+    const validScore =
+        Number.isFinite(score)
+        && score >= 0
+        && score <= 100;
 
     setText(
         "networkScore",
-        Math.round(safeScore)
+        validScore ? Math.round(score) : "N/A"
     );
 
     setText(
         "networkQuality",
-        String(quality).toUpperCase()
+        data.quality || "UNKNOWN"
     );
-
-    const bar = $("scoreBar");
-
-    if (bar) {
-        bar.style.width = `${safeScore}%`;
-    }
 
     setText(
         "scoreDescription",
-        getScoreDescription(safeScore)
+        data.score_description ||
+        data.description ||
+        "Waiting for network measurements."
     );
 
-    updateIntelligenceFromScore(
-        safeScore,
-        data
-    );
+    const scoreBar = $("scoreBar");
+
+    if (scoreBar && validScore) {
+        scoreBar.style.width = `${score}%`;
+
+        scoreBar.setAttribute(
+            "aria-valuenow",
+            String(Math.round(score))
+        );
+    }
+
+    const quality = String(
+        data.quality || "UNKNOWN"
+    ).toUpperCase();
+
+    const scoreContainer =
+        $("networkScoreCard") ||
+        $("scoreCard");
+
+    if (scoreContainer) {
+        scoreContainer.dataset.quality =
+            quality.toLowerCase();
+    }
 }
 
 
-function getScoreDescription(score) {
-    if (score >= 90) {
-        return "Network performance is excellent.";
+/* =========================================================
+   CONNECTION STATUS
+   ========================================================= */
+
+function updateConnectionStatus(data) {
+    if (!data) return;
+
+    const connected =
+        data.internet === true ||
+        String(data.status || "").toUpperCase() === "CONNECTED";
+
+    setText(
+        "connectionType",
+        data.connection_type ||
+        data.type ||
+        "UNKNOWN"
+    );
+
+    setText(
+        "wifiSSID",
+        data.ssid ||
+        data.name ||
+        "N/A"
+    );
+
+    setText(
+        "wifiStatus",
+        connected ? "Connected" : "Unavailable"
+    );
+
+    setText(
+        "ipAddress",
+        data.local_ip ||
+        data.ip ||
+        "N/A"
+    );
+
+    setText(
+        "networkType",
+        data.connection_type ||
+        data.type ||
+        "UNKNOWN"
+    );
+
+    setText(
+        "networkName",
+        data.name ||
+        data.ssid ||
+        "N/A"
+    );
+
+    setText(
+        "networkIP",
+        data.local_ip ||
+        data.ip ||
+        "N/A"
+    );
+
+    setText(
+        "networkGateway",
+        data.gateway ||
+        "N/A"
+    );
+
+    setText(
+        "networkInterface",
+        data.interface ||
+        "N/A"
+    );
+
+    setText(
+        "networkConnectionStatus",
+        connected ? "CONNECTED" : "OFFLINE"
+    );
+
+    const dot = $("connectionDot");
+
+    if (dot) {
+        dot.classList.toggle("online", connected);
+        dot.classList.toggle("offline", !connected);
     }
 
-    if (score >= 75) {
-        return "Network performance is good.";
-    }
+    const liveDot = $("liveDot");
 
-    if (score >= 50) {
-        return "Network performance is acceptable.";
-    }
-
-    if (score >= 25) {
-        return "Network performance is poor.";
-    }
-
-    return "Network performance requires attention.";
-}
-
-
-/* ============================================================
-   INTELLIGENCE ENGINE
-   ============================================================ */
-
-function updateIntelligenceFromScore(score, data = {}) {
-    let priority = "NORMAL";
-    let action = "Monitor network";
-    let message = "IntelliLink is monitoring the connection.";
-
-    if (score >= 90) {
-        priority = "LOW";
-        action = "Maintain connection";
-        message =
-            "Current network conditions are strong. No immediate action is required.";
-
-    } else if (score >= 75) {
-        priority = "NORMAL";
-        action = "Optimize if needed";
-        message =
-            "Connection is stable. IntelliLink recommends continued monitoring.";
-
-    } else if (score >= 50) {
-        priority = "MEDIUM";
-        action = "Monitor performance";
-        message =
-            "Network quality is moderate. IntelliLink is watching for degradation.";
-
-    } else if (score >= 25) {
-        priority = "HIGH";
-        action = "Consider network switch";
-        message =
-            "Network quality is poor. A better available connection may be preferable.";
-
-    } else {
-        priority = "CRITICAL";
-        action = "Check connectivity";
-        message =
-            "Network conditions are critical. Connectivity diagnostics are recommended.";
-    }
-
-    /*
-     * If backend provides an intelligence recommendation,
-     * use it instead of replacing it with frontend assumptions.
-     */
-
-    const intelligence =
-        data.intelligence ||
-        data.recommendation ||
-        data.recommendation_data ||
-        null;
-
-    if (intelligence) {
-
-        priority =
-            intelligence.priority ||
-            intelligence.level ||
-            priority;
-
-        action =
-            intelligence.action ||
-            intelligence.recommended_action ||
-            intelligence.recommendation ||
-            action;
-
-        message =
-            intelligence.message ||
-            intelligence.reason ||
-            message;
+    if (liveDot) {
+        liveDot.classList.toggle("online", connected);
+        liveDot.classList.toggle("offline", !connected);
     }
 
     setText(
+        "systemStatus",
+        connected ? "ONLINE" : "OFFLINE"
+    );
+}
+
+
+/* =========================================================
+   NETWORK PERFORMANCE
+   ========================================================= */
+
+function updateNetworkPerformance(data) {
+    if (!data) return;
+
+    setText(
+        "latencyValue",
+        formatNumber(data.latency_ms, 1)
+    );
+
+    setText(
+        "jitterValue",
+        formatNumber(data.jitter_ms, 1)
+    );
+
+    setText(
+        "packetLossValue",
+        data.packet_loss_percent === null ||
+        data.packet_loss_percent === undefined
+            ? "N/A"
+            : formatNumber(data.packet_loss_percent, 1)
+    );
+
+    setText(
+        "signalValue",
+        data.signal || "N/A"
+    );
+
+    setText(
+        "downloadSpeed",
+        formatMbps(data.download_mbps)
+    );
+
+    setText(
+        "uploadSpeed",
+        formatMbps(data.upload_mbps)
+    );
+
+    setText(
+        "lastUpdate",
+        formatTimestamp(data.timestamp)
+    );
+
+    setText(
+        "networkLastUpdate",
+        formatTimestamp(data.timestamp)
+    );
+}
+
+
+/* =========================================================
+   INTELLILINK INTELLIGENCE
+   ========================================================= */
+
+function updateIntelligence(data) {
+    if (!data) return;
+
+    const intelligence =
+        data.intelligence || data;
+
+    setText(
         "intelligencePriority",
-        displayValue(priority)
+        intelligence.priority || "NORMAL"
     );
 
     setText(
         "intelligenceAction",
-        displayValue(action)
+        intelligence.action || "Monitor network"
     );
 
     setText(
         "intelligenceMessage",
-        displayValue(message)
+        intelligence.message ||
+        "Collecting network information."
     );
+
+    const card = $("intelligenceCard");
+
+    if (card) {
+        card.dataset.priority = String(
+            intelligence.priority || "NORMAL"
+        ).toLowerCase();
+    }
 }
 
 
-/* ============================================================
-   DIAGNOSTICS
-   ============================================================ */
+/* =========================================================
+   NETWORK REFRESH
+   ========================================================= */
 
-async function loadDiagnostics() {
+async function refreshNetwork(options = {}) {
+    if (state.isRefreshing) return;
+
+    state.isRefreshing = true;
+
+    const button = $("refreshNetworkButton");
+
+    if (button) {
+        button.disabled = true;
+        button.classList.add("loading");
+    }
+
     try {
-        const data = await apiRequest(
-            `${APP_CONFIG.apiBase}/diagnostics`,
-            {},
-            20000
+        const [networkResult, snapshotResult] =
+            await Promise.allSettled([
+                apiGet(`${ILX.api}/network`),
+                apiGet(`${ILX.api}/network/snapshot`)
+            ]);
+
+        if (networkResult.status === "fulfilled") {
+            state.network = networkResult.value;
+
+            updateConnectionStatus(
+                state.network
+            );
+        }
+
+        if (snapshotResult.status === "fulfilled") {
+            state.snapshot = snapshotResult.value;
+
+            updateNetworkScore(
+                state.snapshot
+            );
+
+            updateNetworkPerformance(
+                state.snapshot
+            );
+
+            updateIntelligence(
+                state.snapshot
+            );
+        }
+
+        const failures = [
+            networkResult,
+            snapshotResult
+        ].filter(result =>
+            result.status === "rejected"
+        );
+
+        if (failures.length === 2) {
+            throw failures[0].reason;
+        }
+
+        if (options.notify) {
+            showToast(
+                "Network refreshed",
+                "Taarifa za mtandao zimesasishwa.",
+                "success"
+            );
+        }
+
+    } catch (error) {
+        console.error(
+            "Network refresh failed:",
+            error
+        );
+
+        if (options.notify) {
+            showToast(
+                "Network error",
+                error.message,
+                "error"
+            );
+        }
+
+    } finally {
+        state.isRefreshing = false;
+
+        if (button) {
+            button.disabled = false;
+            button.classList.remove("loading");
+        }
+    }
+}
+
+
+/* =========================================================
+   NETWORK PAGE
+   ========================================================= */
+
+async function loadNetworkPage() {
+    try {
+        const network = await apiGet(
+            `${ILX.api}/network`
+        );
+
+        state.network = network;
+
+        updateConnectionStatus(network);
+
+    } catch (error) {
+        console.error(
+            "Could not load network page:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   WIFI INFORMATION
+   ========================================================= */
+
+async function loadWiFiInformation() {
+    try {
+        const wifi = await apiGet(
+            `${ILX.api}/wifi`
+        );
+
+        if (wifi.ssid) {
+            setText("wifiSSID", wifi.ssid);
+            setText("networkName", wifi.ssid);
+        }
+
+        setText(
+            "wifiStatus",
+            wifi.status || "Unknown"
+        );
+
+        if (wifi.signal !== null && wifi.signal !== undefined) {
+            setText("signalValue", wifi.signal);
+        }
+
+    } catch (error) {
+        console.warn(
+            "Wi-Fi details unavailable:",
+            error.message
+        );
+    }
+}
+
+
+/* =========================================================
+   DEVICE IDENTITY
+   ========================================================= */
+
+async function loadDevice() {
+    try {
+        const device = await apiGet(
+            `${ILX.api}/device`
+        );
+
+        state.device = device;
+
+        setText(
+            "deviceStatus",
+            device.status || "ACTIVE"
+        );
+
+        setText(
+            "modelNumber",
+            device.model_number
+        );
+
+        setText(
+            "serialNumber",
+            device.serial_number
+        );
+
+        setText(
+            "deviceID",
+            device.device_id
+        );
+
+        setText(
+            "deviceUUID",
+            device.device_uuid ||
+            device.uuid
+        );
+
+        setText(
+            "smartCardNumber",
+            device.smart_card_number
+        );
+
+        setText(
+            "hardwareRevision",
+            device.hardware_revision
+        );
+
+        setText(
+            "firmwareVersion",
+            device.firmware_version
+        );
+
+        setText(
+            "softwareVersion",
+            device.software_version ||
+            ILX.version
+        );
+
+        setText(
+            "manufacturer",
+            device.manufacturer ||
+            "IntelliLink Systems"
+        );
+
+        setText(
+            "countryCode",
+            device.country_code ||
+            "TZ"
+        );
+
+        setText(
+            "timezone",
+            device.timezone ||
+            "Africa/Dar_es_Salaam"
+        );
+
+        setText(
+            "deviceType",
+            device.device_type ||
+            "Network Management System"
+        );
+
+        setText(
+            "platformSystem",
+            device.platform_system
+        );
+
+        setText(
+            "platformRelease",
+            device.platform_release
+        );
+
+        setText(
+            "platformArchitecture",
+            device.platform_architecture
+        );
+
+        setText(
+            "platformPython",
+            device.platform_python
+        );
+
+    } catch (error) {
+        console.error(
+            "Device identity loading failed:",
+            error
+        );
+
+        showToast(
+            "Device information",
+            "Taarifa za kifaa hazikupatikana.",
+            "warning"
+        );
+    }
+}
+
+
+/* =========================================================
+   DIAGNOSTICS
+   ========================================================= */
+
+async function loadDiagnosticsSummary() {
+    try {
+        const health = await apiGet("/health");
+
+        setText(
+            "diagPython",
+            "Available"
+        );
+
+        setText(
+            "diagInterface",
+            state.network?.interface || "--"
+        );
+
+        setText(
+            "diagGateway",
+            state.network?.gateway || "--"
+        );
+
+        setText(
+            "diagInternet",
+            state.network?.internet
+                ? "Connected"
+                : "Not confirmed"
+        );
+
+        if (health.status === "healthy") {
+            setText(
+                "diagnosticStatus",
+                "SYSTEM ONLINE"
+            );
+        }
+
+    } catch (error) {
+        console.warn(
+            "Health check failed:",
+            error
+        );
+    }
+}
+
+
+async function runDiagnostics() {
+    if (state.isDiagnosing) return;
+
+    state.isDiagnosing = true;
+
+    const button = $("runDiagnosticsButton");
+
+    if (button) {
+        button.disabled = true;
+        button.classList.add("loading");
+        button.textContent = "Checking...";
+    }
+
+    try {
+        const data = await apiGet(
+            `${ILX.api}/diagnostics`
         );
 
         state.diagnostics = data;
 
-        updateDiagnosticsUI(data);
+        setText(
+            "diagnosticStatus",
+            data.status === "PASS"
+                ? "SYSTEM HEALTHY"
+                : "CHECK REQUIRED"
+        );
 
-        return data;
+        setText(
+            "diagPython",
+            data.python_version ||
+            data.python ||
+            "--"
+        );
+
+        setText(
+            "diagInterface",
+            data.network_interface ||
+            data.interface ||
+            "--"
+        );
+
+        setText(
+            "diagGateway",
+            data.default_gateway ||
+            data.gateway ||
+            "--"
+        );
+
+        setText(
+            "diagInternet",
+            data.internet ||
+            "UNKNOWN"
+        );
+
+        setText(
+            "diagnosticMessage",
+            data.message ||
+            "Diagnostics completed."
+        );
+
+        const icon = $("diagnosticStatusIcon");
+
+        if (icon) {
+            icon.textContent =
+                data.status === "PASS"
+                    ? "✓"
+                    : "!";
+        }
+
+        showToast(
+            "Diagnostics completed",
+            data.message ||
+                "Ukaguzi wa mfumo umekamilika.",
+            data.status === "PASS"
+                ? "success"
+                : "warning"
+        );
 
     } catch (error) {
-
         console.error(
-            "Diagnostics error:",
+            "Diagnostics failed:",
             error
         );
 
-        updateDiagnosticsErrorUI();
+        setText(
+            "diagnosticStatus",
+            "DIAGNOSTICS FAILED"
+        );
 
-        return null;
-    }
-}
+        setText(
+            "diagnosticMessage",
+            error.message
+        );
 
-
-function updateDiagnosticsUI(data) {
-    if (!data) {
-        return;
-    }
-
-    const diagnostics =
-        data.diagnostics ||
-        data;
-
-    const status =
-        diagnostics.status ||
-        diagnostics.overall_status ||
-        diagnostics.result ||
-        "UNKNOWN";
-
-    setText(
-        "diagnosticStatus",
-        String(status).toUpperCase()
-    );
-
-    setText(
-        "diagPython",
-        formatDiagnosticValue(
-            diagnostics.python ||
-            diagnostics.python_version ||
-            diagnostics.runtime
-        )
-    );
-
-    setText(
-        "diagInterface",
-        formatDiagnosticValue(
-            diagnostics.interface ||
-            diagnostics.network_interface
-        )
-    );
-
-    setText(
-        "diagGateway",
-        formatDiagnosticValue(
-            diagnostics.gateway ||
-            diagnostics.default_gateway
-        )
-    );
-
-    setText(
-        "diagInternet",
-        formatDiagnosticValue(
-            diagnostics.internet ||
-            diagnostics.internet_status ||
-            diagnostics.internet_connection
-        )
-    );
-
-    const icon = $("diagnosticStatusIcon");
-
-    if (icon) {
-
-        const normalized =
-            String(status).toLowerCase();
-
-        icon.classList.remove(
-            "success",
-            "warning",
+        showToast(
+            "Diagnostics error",
+            error.message,
             "error"
         );
 
-        if (
-            normalized.includes("ok") ||
-            normalized.includes("healthy") ||
-            normalized.includes("pass") ||
-            normalized.includes("success")
-        ) {
-            icon.classList.add("success");
+    } finally {
+        state.isDiagnosing = false;
 
-        } else if (
-            normalized.includes("warn")
-        ) {
-            icon.classList.add("warning");
-
-        } else {
-            icon.classList.add("error");
+        if (button) {
+            button.disabled = false;
+            button.classList.remove("loading");
+            button.textContent = "Run Full Diagnostics";
         }
     }
-
-    setText(
-        "diagnosticMessage",
-        displayValue(
-            diagnostics.message ||
-            diagnostics.summary ||
-            diagnostics.description,
-            "Diagnostics completed."
-        )
-    );
 }
 
 
-function formatDiagnosticValue(value) {
-    if (!isValidValue(value)) {
-        return "N/A";
-    }
-
-    if (typeof value === "boolean") {
-        return value ? "PASS" : "FAIL";
-    }
-
-    return String(value);
-}
-
-
-function updateDiagnosticsErrorUI() {
-    setText("diagnosticStatus", "ERROR");
-    setText("diagPython", "N/A");
-    setText("diagInterface", "N/A");
-    setText("diagGateway", "N/A");
-    setText("diagInternet", "N/A");
-    setText(
-        "diagnosticMessage",
-        "Diagnostics service is unavailable."
-    );
-
-    const icon = $("diagnosticStatusIcon");
-
-    if (icon) {
-        icon.classList.remove(
-            "success",
-            "warning"
-        );
-
-        icon.classList.add("error");
-    }
-}
-
-
-/* ============================================================
+/* =========================================================
    SPEED TEST
-   ============================================================ */
+   ========================================================= */
 
 async function runSpeedTest() {
+    if (state.isTestingSpeed) return;
+
+    state.isTestingSpeed = true;
+
     const button = $("speedTestButton");
 
     if (button) {
         button.disabled = true;
-        button.dataset.originalText =
-            button.textContent;
-
-        button.textContent =
-            "Testing...";
+        button.classList.add("loading");
+        button.textContent = "Testing...";
     }
 
-    setText(
-        "speedTestResult",
-        "Running connection benchmark..."
-    );
-
-    setText(
-        "speedServer",
-        "N/A"
-    );
-
-    setText(
-        "speedLatency",
-        "N/A"
-    );
-
-    setText(
-        "speedDownload",
-        "N/A"
-    );
-
-    setText(
-        "speedUpload",
-        "N/A"
-    );
-
     try {
-
-        const data = await apiRequest(
-            `${APP_CONFIG.apiBase}/speed-test`,
-            {
-                method: "GET"
-            },
-            30000
+        setText(
+            "speedServer",
+            "Connecting..."
         );
 
-        state.speedTest = data;
+        setText(
+            "speedLatency",
+            "--"
+        );
 
-        updateSpeedTestUI(data);
+        setText(
+            "speedDownload",
+            "N/A"
+        );
+
+        setText(
+            "speedUpload",
+            "N/A"
+        );
+
+        const result = await apiGet(
+            `${ILX.api}/speed-test`
+        );
+
+        state.speedTest = result;
+
+        setText(
+            "speedServer",
+            result.server || "N/A"
+        );
+
+        setText(
+            "speedLatency",
+            formatMilliseconds(result.latency_ms)
+        );
+
+        setText(
+            "speedDownload",
+            formatMbps(result.download_mbps)
+        );
+
+        setText(
+            "speedUpload",
+            formatMbps(result.upload_mbps)
+        );
+
+        setText(
+            "speedTestResult",
+            result.message ||
+                result.status ||
+                "Test completed."
+        );
 
         showToast(
-            "Speed Test",
-            "Network benchmark completed.",
-            "success"
+            "Connection test complete",
+            result.message ||
+                "Latency test completed.",
+            result.internet
+                ? "success"
+                : "warning"
         );
 
-        return data;
-
     } catch (error) {
-
         console.error(
-            "Speed test error:",
+            "Speed test failed:",
             error
         );
 
         setText(
             "speedTestResult",
-            "Test failed"
+            error.message
         );
 
         showToast(
-            "Speed Test",
-            error.message ||
-            "Unable to complete speed test.",
+            "Speed test failed",
+            error.message,
             "error"
         );
 
-        return null;
-
     } finally {
+        state.isTestingSpeed = false;
 
         if (button) {
             button.disabled = false;
-
-            button.textContent =
-                button.dataset.originalText ||
-                "Run Speed Test";
+            button.classList.remove("loading");
+            button.textContent = "Run Speed Test";
         }
     }
 }
 
 
-function updateSpeedTestUI(data) {
-    if (!data) {
-        return;
-    }
+/* =========================================================
+   APPLICATION HEALTH
+   ========================================================= */
 
-    const result =
-        data.result ||
-        data.speed_test ||
-        data;
-
-    setText(
-        "speedTestResult",
-        displayValue(
-            result.status ||
-            result.message ||
-            "Completed"
-        )
-    );
-
-    setText(
-        "speedServer",
-        displayValue(
-            result.server ||
-            result.host ||
-            result.target
-        )
-    );
-
-    setText(
-        "speedLatency",
-        formatMilliseconds(
-            result.latency_ms ??
-            result.latency
-        )
-    );
-
-    setText(
-        "speedDownload",
-        formatMbps(
-            result.download_mbps ??
-            result.download_speed ??
-            result.download
-        )
-    );
-
-    setText(
-        "speedUpload",
-        formatMbps(
-            result.upload_mbps ??
-            result.upload_speed ??
-            result.upload
-        )
-    );
-}
-
-
-/* ============================================================
-   FULL DASHBOARD REFRESH
-   ============================================================ */
-
-async function refreshDashboard(options = {}) {
-    const showOverlay =
-        options.showOverlay === true;
-
-    if (state.loading) {
-        return;
-    }
-
-    state.loading = true;
-
-    if (showOverlay) {
-        showLoading(
-            options.message ||
-            "Refreshing IntelliLink X1..."
-        );
-    }
-
+async function checkApplicationHealth() {
     try {
+        const health = await apiGet("/health");
 
-        /*
-         * Health first.
-         */
+        const online =
+            health.status === "healthy";
 
-        await loadHealth();
+        setText(
+            "systemStatus",
+            online ? "ONLINE" : "DEGRADED"
+        );
 
-        /*
-         * These requests are independent,
-         * so execute them together.
-         */
+        setText(
+            "footerVersion",
+            `v${ILX.version} • Network Intelligence System`
+        );
 
-        await Promise.allSettled([
-            loadDevice(),
-            loadNetwork(),
-            loadWifi(),
-            loadNetworkSnapshot(),
-            loadNetworkScore()
-        ]);
-
-        state.lastUpdate = new Date();
-
-        updateLastRefreshTime();
+        return health;
 
     } catch (error) {
-
         console.error(
-            "Dashboard refresh failed:",
+            "Application health check failed:",
             error
         );
 
-    } finally {
+        setText(
+            "systemStatus",
+            "API UNAVAILABLE"
+        );
 
-        state.loading = false;
-
-        if (showOverlay) {
-            hideLoading();
-        }
+        return null;
     }
 }
 
 
-/* ============================================================
-   LAST UPDATE
-   ============================================================ */
+/* =========================================================
+   DASHBOARD INITIALIZATION
+   ========================================================= */
 
-function updateLastRefreshTime() {
-    if (!state.lastUpdate) {
-        return;
-    }
+async function initializeDashboard() {
+    await checkApplicationHealth();
 
-    /*
-     * The current index.html may not have a dedicated
-     * last-update element. This function safely does nothing
-     * if it is not present.
-     */
-
-    setText(
-        "lastUpdate",
-        state.lastUpdate.toLocaleTimeString()
-    );
+    await Promise.allSettled([
+        loadDevice(),
+        loadWiFiInformation(),
+        refreshNetwork(),
+        loadDiagnosticsSummary()
+    ]);
 }
 
 
-/* ============================================================
-   SECTION NAVIGATION
-   ============================================================ */
-
-function initializeNavigation() {
-
-    const navigation =
-        document.querySelectorAll(
-            "[data-section]"
-        );
-
-    navigation.forEach(item => {
-
-        item.addEventListener(
-            "click",
-            event => {
-
-                event.preventDefault();
-
-                const section =
-                    item.dataset.section;
-
-                if (!section) {
-                    return;
-                }
-
-                switchSection(section);
-            }
-        );
-    });
-}
-
-
-function switchSection(sectionName) {
-
-    state.currentSection =
-        sectionName;
-
-    /*
-     * Support common section selectors.
-     */
-
-    const sections =
-        document.querySelectorAll(
-            "[data-page-section], .page-section, section[id]"
-        );
-
-    sections.forEach(section => {
-
-        const sectionId =
-            section.dataset.pageSection ||
-            section.id;
-
-        if (!sectionId) {
-            return;
-        }
-
-        const isActive =
-            sectionId === sectionName;
-
-        section.classList.toggle(
-            "active",
-            isActive
-        );
-    });
-
-    /*
-     * Navigation active state.
-     */
-
-    const navigation =
-        document.querySelectorAll(
-            "[data-section]"
-        );
-
-    navigation.forEach(item => {
-
-        item.classList.toggle(
-            "active",
-            item.dataset.section === sectionName
-        );
-    });
-
-    /*
-     * Load diagnostics only when needed.
-     */
-
-    if (
-        sectionName === "diagnostics" &&
-        !state.diagnostics
-    ) {
-        loadDiagnostics();
-    }
-}
-
-
-/* ============================================================
-   BUTTON EVENTS
-   ============================================================ */
+/* =========================================================
+   EVENT LISTENERS
+   ========================================================= */
 
 function initializeButtons() {
-
-    const refreshButton =
-        $("refreshNetworkButton");
+    const refreshButton = $("refreshNetworkButton");
 
     if (refreshButton) {
-
         refreshButton.addEventListener(
             "click",
-            async () => {
+            () => refreshNetwork({
+                notify: true
+            })
+        );
+    }
 
-                await refreshDashboard({
-                    showOverlay: true,
-                    message:
-                        "Refreshing network information..."
+    const scanButton = $("scanNetworkButton");
+
+    if (scanButton) {
+        scanButton.addEventListener(
+            "click",
+            async () => {
+                await refreshNetwork({
+                    notify: false
                 });
 
                 showToast(
-                    "Network",
-                    "Network information refreshed.",
+                    "Network scan complete",
+                    "Taarifa za connection zimesasishwa.",
                     "success"
                 );
             }
         );
     }
 
-
-    const scanButton =
-        $("scanNetworkButton");
-
-    if (scanButton) {
-
-        scanButton.addEventListener(
-            "click",
-            async () => {
-
-                scanButton.disabled = true;
-
-                const original =
-                    scanButton.textContent;
-
-                scanButton.textContent =
-                    "Scanning...";
-
-                try {
-
-                    await loadNetworkSnapshot();
-                    await loadNetworkScore();
-
-                    showToast(
-                        "Network Scan",
-                        "Network scan completed.",
-                        "success"
-                    );
-
-                } catch (error) {
-
-                    showToast(
-                        "Network Scan",
-                        "Network scan failed.",
-                        "error"
-                    );
-
-                } finally {
-
-                    scanButton.disabled = false;
-
-                    scanButton.textContent =
-                        original;
-                }
-            }
-        );
-    }
-
-
-    const speedButton =
-        $("speedTestButton");
+    const speedButton = $("speedTestButton");
 
     if (speedButton) {
-
         speedButton.addEventListener(
             "click",
             runSpeedTest
         );
     }
 
-
-    const diagnosticsButton =
-        $("runDiagnosticsButton");
+    const diagnosticsButton = $("runDiagnosticsButton");
 
     if (diagnosticsButton) {
-
         diagnosticsButton.addEventListener(
             "click",
-            async () => {
-
-                diagnosticsButton.disabled =
-                    true;
-
-                const original =
-                    diagnosticsButton.textContent;
-
-                diagnosticsButton.textContent =
-                    "Running...";
-
-                try {
-
-                    await loadDiagnostics();
-
-                    showToast(
-                        "Diagnostics",
-                        "System diagnostics completed.",
-                        "success"
-                    );
-
-                } catch (error) {
-
-                    showToast(
-                        "Diagnostics",
-                        "Diagnostics failed.",
-                        "error"
-                    );
-
-                } finally {
-
-                    diagnosticsButton.disabled =
-                        false;
-
-                    diagnosticsButton.textContent =
-                        original;
-                }
-            }
+            runDiagnostics
         );
     }
 }
 
 
-/* ============================================================
-   KEYBOARD SHORTCUTS
-   ============================================================ */
-
-function initializeKeyboardShortcuts() {
-
-    document.addEventListener(
-        "keydown",
-        event => {
-
-            /*
-             * Ctrl/Cmd + R is intentionally not intercepted.
-             *
-             * Ctrl/Cmd + Shift + R:
-             * manual application refresh.
-             */
-
-            if (
-                event.ctrlKey &&
-                event.shiftKey &&
-                event.key.toLowerCase() === "r"
-            ) {
-
-                event.preventDefault();
-
-                refreshDashboard({
-                    showOverlay: true,
-                    message:
-                        "Refreshing IntelliLink X1..."
-                });
-            }
-        }
-    );
-}
-
-
-/* ============================================================
+/* =========================================================
    AUTOMATIC REFRESH
-   ============================================================ */
+   ========================================================= */
 
-function startAutomaticRefresh() {
-
-    stopAutomaticRefresh();
-
-    state.refreshTimer =
-        setInterval(
-            () => {
-
-                /*
-                 * Don't interrupt an existing operation.
-                 */
-
-                if (
-                    !state.loading
-                ) {
-                    refreshDashboard({
-                        showOverlay: false
-                    });
-                }
-
-            },
-            APP_CONFIG.refreshInterval
-        );
-}
-
-
-function stopAutomaticRefresh() {
-
+function startAutoRefresh() {
     if (state.refreshTimer) {
-
-        clearInterval(
-            state.refreshTimer
-        );
-
-        state.refreshTimer = null;
+        clearInterval(state.refreshTimer);
     }
+
+    state.refreshTimer = setInterval(() => {
+        if (document.hidden) return;
+
+        refreshNetwork();
+    }, ILX.refreshInterval);
 }
 
 
-/* ============================================================
-   HEALTH MONITOR
-   ============================================================ */
+/* =========================================================
+   PAGE VISIBILITY
+   ========================================================= */
 
-function startHealthMonitor() {
-
-    stopHealthMonitor();
-
-    state.healthTimer =
-        setInterval(
-            () => {
-                loadHealth();
-            },
-            APP_CONFIG.healthInterval
-        );
-}
-
-
-function stopHealthMonitor() {
-
-    if (state.healthTimer) {
-
-        clearInterval(
-            state.healthTimer
-        );
-
-        state.healthTimer = null;
-    }
-}
-
-
-/* ============================================================
-   BROWSER ONLINE / OFFLINE
-   ============================================================ */
-
-function initializeBrowserNetworkEvents() {
-
-    window.addEventListener(
-        "online",
-        () => {
-
-            showToast(
-                "Connection",
-                "Browser network connection restored.",
-                "success"
-            );
-
-            loadHealth();
-        }
-    );
-
-
-    window.addEventListener(
-        "offline",
-        () => {
-
-            showToast(
-                "Connection",
-                "Browser appears to be offline.",
-                "warning"
-            );
-
-            updateOfflineState();
-        }
-    );
-}
-
-
-/* ============================================================
-   VISIBILITY CONTROL
-   ============================================================ */
-
-function initializeVisibilityEvents() {
-
+function initializeVisibilityHandler() {
     document.addEventListener(
         "visibilitychange",
         () => {
-
-            if (
-                document.hidden
-            ) {
-
-                stopAutomaticRefresh();
-                stopHealthMonitor();
-
-            } else {
-
-                loadHealth();
-
-                startAutomaticRefresh();
-                startHealthMonitor();
+            if (!document.hidden && state.initialized) {
+                refreshNetwork();
             }
         }
     );
 }
 
 
-/* ============================================================
-   API INFORMATION
-   ============================================================ */
+/* =========================================================
+   NETWORK ERROR DISPLAY
+   ========================================================= */
 
-async function loadApiInformation() {
+window.addEventListener("offline", () => {
+    setText("systemStatus", "OFFLINE");
 
-    try {
+    showToast(
+        "Connection lost",
+        "Kifaa hakijathibitisha muunganisho wa intaneti.",
+        "warning"
+    );
+});
 
-        const data =
-            await apiRequest(
-                `${APP_CONFIG.apiBase}`
-            );
 
-        /*
-         * If footerVersion exists,
-         * prefer backend version when available.
-         */
+window.addEventListener("online", () => {
+    showToast(
+        "Connection restored",
+        "Kifaa kimeripoti kuwa kimeunganishwa tena.",
+        "success"
+    );
 
-        const version =
-            data.version ||
-            data.app_version ||
-            data.api_version;
+    refreshNetwork();
+});
 
-        if (version) {
 
-            setText(
-                "footerVersion",
-                `v${version}`
-            );
-        }
+/* =========================================================
+   CLEANUP
+   ========================================================= */
 
-        return data;
-
-    } catch (error) {
-
-        /*
-         * API metadata is optional.
-         */
-
-        console.warn(
-            "API information unavailable:",
-            error.message
-        );
-
-        return null;
+window.addEventListener("beforeunload", () => {
+    if (state.refreshTimer) {
+        clearInterval(state.refreshTimer);
     }
-}
+});
 
 
-/* ============================================================
-   INITIAL UI STATE
-   ============================================================ */
+/* =========================================================
+   APPLICATION START
+   ========================================================= */
 
-function initializeDefaultUI() {
-
-    setText(
-        "networkScore",
-        "N/A"
-    );
-
-    setText(
-        "networkQuality",
-        "UNKNOWN"
-    );
-
-    setText(
-        "latencyValue",
-        "N/A"
-    );
-
-    setText(
-        "jitterValue",
-        "N/A"
-    );
-
-    setText(
-        "packetLossValue",
-        "N/A"
-    );
-
-    setText(
-        "signalValue",
-        "N/A"
-    );
-
-    setText(
-        "downloadSpeed",
-        "N/A"
-    );
-
-    setText(
-        "uploadSpeed",
-        "N/A"
-    );
-
-    setText(
-        "wifiSSID",
-        "N/A"
-    );
-
-    setText(
-        "wifiStatus",
-        "N/A"
-    );
-
-    setText(
-        "connectionType",
-        "N/A"
-    );
-}
-
-
-/* ============================================================
-   ERROR HANDLING
-   ============================================================ */
-
-window.addEventListener(
-    "error",
-    event => {
-
-        console.error(
-            "IntelliLink frontend error:",
-            event.error || event.message
-        );
-    }
-);
-
-
-window.addEventListener(
-    "unhandledrejection",
-    event => {
-
-        console.error(
-            "IntelliLink unhandled promise rejection:",
-            event.reason
-        );
-    }
-);
-
-
-/* ============================================================
-   APPLICATION STARTUP
-   ============================================================ */
-
-async function initializeApp() {
-
-    if (state.initialized) {
-        return;
-    }
+async function startIntelliLink() {
+    if (state.initialized) return;
 
     state.initialized = true;
-
-    console.log(
-        `%c${APP_CONFIG.name}`,
-        "font-weight:bold;font-size:18px;"
-    );
-
-    console.log(
-        `Version: ${APP_CONFIG.version}`
-    );
-
-    console.log(
-        "IntelliLink X1 frontend initializing..."
-    );
-
-    initializeDefaultUI();
 
     initializeNavigation();
 
     initializeButtons();
 
-    initializeKeyboardShortcuts();
+    initializeVisibilityHandler();
 
-    initializeBrowserNetworkEvents();
+    runSplashScreen();
 
-    initializeVisibilityEvents();
+    showPage("dashboard");
 
-    /*
-     * Initial health check.
-     */
+    startAutoRefresh();
 
-    await loadHealth();
-
-    /*
-     * Load API metadata without blocking
-     * the main dashboard.
-     */
-
-    loadApiInformation();
-
-    /*
-     * Initial dashboard data.
-     */
-
-    await refreshDashboard({
-        showOverlay: true,
-        message: "Initializing IntelliLink X1..."
+    // Keep the splash visible for its animation.
+    // API initialization continues without trapping the UI.
+    initializeDashboard().catch(error => {
+        console.error(
+            "Dashboard initialization failed:",
+            error
+        );
     });
-
-    /*
-     * Background monitoring.
-     */
-
-    startAutomaticRefresh();
-
-    startHealthMonitor();
-
-    console.log(
-        "IntelliLink X1 frontend ready."
-    );
 }
 
 
-/* ============================================================
-   DOM READY
-   ============================================================ */
-
-if (
-    document.readyState === "loading"
-) {
-
+if (document.readyState === "loading") {
     document.addEventListener(
         "DOMContentLoaded",
-        initializeApp,
-        {
-            once: true
-        }
+        startIntelliLink,
+        { once: true }
     );
-
 } else {
-
-    initializeApp();
+    startIntelliLink();
 }
 
 
-/* ============================================================
-   PUBLIC DEBUG API
-   ============================================================ */
+/* =========================================================
+   DEBUG ACCESS
+   ========================================================= */
 
-/*
- * Useful during development from browser console:
- *
- *   IntelliLink.refresh()
- *   IntelliLink.network()
- *   IntelliLink.device()
- *   IntelliLink.diagnostics()
- *   IntelliLink.speedTest()
- *
- */
-
-window.IntelliLink = {
-
-    refresh: () =>
-        refreshDashboard({
-            showOverlay: true
-        }),
-
-    network: loadNetwork,
-
-    wifi: loadWifi,
-
-    device: loadDevice,
-
-    diagnostics: loadDiagnostics,
-
-    speedTest: runSpeedTest,
-
-    health: loadHealth,
-
-    snapshot: loadNetworkSnapshot,
-
-    score: loadNetworkScore,
-
-    state: () => ({
-        ...state
-    })
+window.IntelliLinkX1 = {
+    state,
+    refreshNetwork,
+    loadDevice,
+    runDiagnostics,
+    runSpeedTest,
+    showPage,
+    checkApplicationHealth
 };
