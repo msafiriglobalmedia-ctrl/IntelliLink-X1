@@ -1,1512 +1,792 @@
-/* =========================================================
-   INTELLILINK X1
-   AI-POWERED PREDICTIVE MULTI-CONNECTIVITY
-   NETWORK MANAGEMENT SYSTEM
+'use strict';
 
-   Developer: MSAFIRI GROUP
-   Version: 0.1.0
-   Backend: FastAPI
-   ========================================================= */
+(() => {
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-"use strict";
+  const state = {
+    running: false,
+    testTimer: null,
+    progress: 0,
+    selectedNetwork: '4G LTE',
+    toastTimer: null
+  };
 
-/* =========================================================
-   CONFIGURATION
-   ========================================================= */
+  const demoProfiles = {
+    '4G LTE': {
+      score: 87,
+      latency: 42,
+      download: 38.6,
+      loss: 0.2,
+      stability: 92,
+      responsiveness: 85,
+      throughput: 81,
+      label: 'Excellent'
+    },
 
-const ILX = {
-    name: "IntelliLink X1",
-    version: "0.1.0",
-    api: "/api/v1",
-    refreshInterval: 20000,
-    requestTimeout: 12000
-};
+    'Wi-Fi': {
+      score: 79,
+      latency: 55,
+      download: 46.2,
+      loss: 0.4,
+      stability: 86,
+      responsiveness: 78,
+      throughput: 84,
+      label: 'Good'
+    },
 
+    '5G': {
+      score: 94,
+      latency: 19,
+      download: 122.4,
+      loss: 0.1,
+      stability: 93,
+      responsiveness: 95,
+      throughput: 96,
+      label: 'Excellent'
+    },
 
-/* =========================================================
-   APPLICATION STATE
-   ========================================================= */
+    'Satellite': {
+      score: 68,
+      latency: 145,
+      download: 27.3,
+      loss: 0.7,
+      stability: 76,
+      responsiveness: 61,
+      throughput: 70,
+      label: 'Fair'
+    },
 
-const state = {
-    currentPage: "dashboard",
-    device: null,
-    network: null,
-    snapshot: null,
-    diagnostics: null,
-    speedTest: null,
-    isRefreshing: false,
-    isDiagnosing: false,
-    isTestingSpeed: false,
-    initialized: false,
-    refreshTimer: null
-};
-
-
-/* =========================================================
-   DOM HELPERS
-   ========================================================= */
-
-function $(id) {
-    return document.getElementById(id);
-}
-
-
-function setText(id, value, fallback = "N/A") {
-    const element = $(id);
-
-    if (!element) return;
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-        element.textContent = fallback;
-        return;
+    'WAN': {
+      score: 91,
+      latency: 12,
+      download: 98.5,
+      loss: 0.1,
+      stability: 96,
+      responsiveness: 94,
+      throughput: 90,
+      label: 'Excellent'
     }
+  };
 
-    element.textContent = String(value);
-}
+  const connectedSources = new Set([
+    '4G LTE',
+    'Wi-Fi'
+  ]);
 
+  // ==========================================
+  // TOAST NOTIFICATIONS
+  // ==========================================
 
-function setHTML(id, value) {
-    const element = $(id);
+  function showToast(message) {
+    const toast = $('#toast');
 
-    if (!element) return;
+    if (!toast) return;
 
-    element.innerHTML = value;
-}
+    toast.textContent = message;
+    toast.classList.add('show');
 
+    clearTimeout(state.toastTimer);
 
-function showElement(element) {
-    if (!element) return;
+    state.toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3200);
+  }
 
-    element.hidden = false;
-    element.style.display = "";
-}
+  // ==========================================
+  // LAST UPDATED
+  // ==========================================
 
+  function setUpdated() {
+    const target = $('#lastUpdated');
 
-function hideElement(element) {
-    if (!element) return;
-
-    element.hidden = true;
-}
-
-
-function formatNumber(value, decimals = 1) {
-    if (
-        value === null ||
-        value === undefined ||
-        !Number.isFinite(Number(value))
-    ) {
-        return "N/A";
-    }
-
-    return Number(value).toFixed(decimals);
-}
-
-
-function formatMilliseconds(value) {
-    const number = Number(value);
-
-    if (
-        value === null ||
-        value === undefined ||
-        !Number.isFinite(number)
-    ) {
-        return "N/A";
-    }
-
-    return `${formatNumber(number, 1)} ms`;
-}
-
-
-function formatMbps(value) {
-    const number = Number(value);
-
-    if (
-        value === null ||
-        value === undefined ||
-        !Number.isFinite(number)
-    ) {
-        return "N/A";
-    }
-
-    return `${formatNumber(number, 2)} Mbps`;
-}
-
-
-function formatTimestamp(value) {
-    if (!value) return "--";
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        return String(value);
-    }
-
-    return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-    });
-}
-
-
-/* =========================================================
-   SAFE API REQUESTS
-   ========================================================= */
-
-async function apiRequest(path, options = {}) {
-    const controller = new AbortController();
-
-    const timeout = setTimeout(() => {
-        controller.abort();
-    }, ILX.requestTimeout);
-
-    try {
-        const response = await fetch(path, {
-            ...options,
-            signal: controller.signal,
-            headers: {
-                Accept: "application/json",
-                ...(options.headers || {})
-            }
-        });
-
-        const contentType =
-            response.headers.get("content-type") || "";
-
-        let data;
-
-        if (contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = await response.text();
+    if (target) {
+      target.textContent = new Intl.DateTimeFormat(
+        undefined,
+        {
+          hour: '2-digit',
+          minute: '2-digit'
         }
-
-        if (!response.ok) {
-            const detail =
-                typeof data === "object" && data !== null
-                    ? data.detail || data.message || data.error
-                    : data;
-
-            throw new Error(
-                detail || `HTTP ${response.status}`
-            );
-        }
-
-        return data;
-
-    } catch (error) {
-        if (error.name === "AbortError") {
-            throw new Error(
-                "Ombi limechukua muda mrefu kujibu. Jaribu tena."
-            );
-        }
-
-        throw error;
-
-    } finally {
-        clearTimeout(timeout);
+      ).format(new Date());
     }
-}
+  }
 
+  // ==========================================
+  // UPDATE TEXT CONTENT
+  // ==========================================
 
-async function apiGet(path) {
-    return apiRequest(path, {
-        method: "GET",
-        cache: "no-store"
-    });
-}
+  function setText(selector, value) {
+    const node = $(selector);
 
+    if (node) {
+      node.textContent = value;
+    }
+  }
 
-/* =========================================================
-   TOAST NOTIFICATIONS
-   ========================================================= */
+  // ==========================================
+  // SCORE COLORS
+  // ==========================================
 
-function showToast(
-    title,
-    message,
-    type = "info"
-) {
-    const toast = $("toast");
-
-    if (!toast) {
-        console.log(`[${type}] ${title}: ${message}`);
-        return;
+  function scoreColor(score) {
+    if (score >= 85) {
+      return 'var(--green)';
     }
 
-    setText("toastTitle", title);
-    setText("toastMessage", message);
-
-    toast.dataset.type = type;
-
-    showElement(toast);
-
-    toast.classList.remove("show");
-
-    requestAnimationFrame(() => {
-        toast.classList.add("show");
-    });
-
-    clearTimeout(showToast.timer);
-
-    showToast.timer = setTimeout(() => {
-        toast.classList.remove("show");
-    }, 4000);
-}
-
-
-/* =========================================================
-   LOADING OVERLAY
-   ========================================================= */
-
-function showLoading(message = "Loading IntelliLink X1...") {
-    const overlay = $("loadingOverlay");
-
-    if (!overlay) return;
-
-    setText("loadingMessage", message);
-
-    showElement(overlay);
-}
-
-
-function hideLoading() {
-    const overlay = $("loadingOverlay");
-
-    if (!overlay) return;
-
-    hideElement(overlay);
-}
-
-
-/* =========================================================
-   SPLASH SCREEN
-   ========================================================= */
-
-function runSplashScreen() {
-    const splash = $("splashScreen");
-
-    if (!splash) {
-        document.body.classList.add("app-ready");
-        return;
+    if (score >= 70) {
+      return 'var(--cyan)';
     }
 
-    document.body.classList.add("splash-active");
-
-    splash.classList.remove("splash-hidden");
-
-    splash.setAttribute("aria-hidden", "false");
-
-    // Ensure the animation is restarted on a fresh page load.
-    const logo = $("splashLogo");
-
-    if (logo) {
-        logo.classList.remove("logo-animate");
-
-        void logo.offsetWidth;
-
-        logo.classList.add("logo-animate");
+    if (score >= 50) {
+      return 'var(--orange)';
     }
 
-    const minimumDuration = 2200;
+    return 'var(--red)';
+  }
 
-    const maximumDuration = 3800;
+  // ==========================================
+  // RENDER NETWORK PROFILE
+  // ==========================================
 
-    const start = Date.now();
+  function renderProfile(name, showMessage = false) {
+    const profile = demoProfiles[name];
 
-    const finishSplash = () => {
-        const elapsed = Date.now() - start;
+    if (!profile) return;
 
-        const remaining = Math.max(
-            0,
-            minimumDuration - elapsed
-        );
+    state.selectedNetwork = name;
 
-        setTimeout(() => {
-            splash.classList.add("splash-hidden");
+    setText('#healthScore', profile.score);
+    setText('#gaugeScore', profile.score);
 
-            splash.setAttribute("aria-hidden", "true");
+    setText('#latencyValue', profile.latency);
 
-            document.body.classList.remove("splash-active");
-
-            document.body.classList.add("app-ready");
-
-            setTimeout(() => {
-                splash.style.display = "none";
-            }, 700);
-
-        }, remaining);
-    };
-
-    // The splash should not trap the user if an API is slow.
-    const safetyTimer = setTimeout(
-        finishSplash,
-        maximumDuration
+    setText(
+      '#downloadValue',
+      profile.download.toFixed(1)
     );
 
-    window.addEventListener(
-        "load",
-        () => {
-            clearTimeout(safetyTimer);
-            finishSplash();
-        },
-        { once: true }
+    setText(
+      '#lossValue',
+      profile.loss.toFixed(1)
     );
-}
 
+    setText(
+      '#stabilityValue',
+      `${profile.stability}%`
+    );
 
-/* =========================================================
-   PAGE NAVIGATION
-   ========================================================= */
+    setText(
+      '#responsivenessValue',
+      `${profile.responsiveness}%`
+    );
 
-function normalizePageName(name) {
-    const value = String(name || "")
-        .trim()
-        .toLowerCase();
+    setText(
+      '#throughputValue',
+      `${profile.throughput}%`
+    );
 
-    const allowed = [
-        "dashboard",
-        "network",
-        "diagnostics",
-        "device"
+    setText('#scoreLabel', profile.label);
+    setText('#suggestionText', name);
+
+    const bar = $('#healthBar');
+
+    if (bar) {
+      bar.style.width = `${profile.score}%`;
+    }
+
+    const gauge = $('#gaugeProgress');
+
+    if (gauge) {
+      gauge.setAttribute(
+        'stroke-dasharray',
+        `${profile.score} 100`
+      );
+    }
+
+    const gaugeLabel = $('.score-gauge');
+
+    if (gaugeLabel) {
+      gaugeLabel.setAttribute(
+        'aria-label',
+        `Connection score ${profile.score} out of 100`
+      );
+    }
+
+    const label = $('#scoreLabel');
+
+    if (label) {
+      label.style.color = scoreColor(profile.score);
+    }
+
+    $$('.network-row').forEach(row => {
+      const active = row.dataset.network === name;
+
+      row.classList.toggle('selected', active);
+
+      row.setAttribute(
+        'aria-pressed',
+        String(active)
+      );
+    });
+
+    setUpdated();
+
+    if (showMessage) {
+      showToast(
+        `${name} selected. Demo profile loaded; no network switch was performed.`
+      );
+    }
+  }
+
+  // ==========================================
+  // ACTIVITY EVENT LOG
+  // ==========================================
+
+  function addEvent(title, detail, kind = 'info') {
+    const list = $('#eventList');
+
+    if (!list) return;
+
+    const empty = $('.empty-events', list);
+
+    if (empty) {
+      empty.remove();
+    }
+
+    const iconClass =
+      kind === 'success'
+        ? 'event-success'
+        : kind === 'warn'
+          ? 'event-warn'
+          : 'event-info';
+
+    const icon =
+      kind === 'success'
+        ? '✓'
+        : kind === 'warn'
+          ? '!'
+          : '⌁';
+
+    const time = new Intl.DateTimeFormat(
+      undefined,
+      {
+        hour: '2-digit',
+        minute: '2-digit'
+      }
+    ).format(new Date());
+
+    const row = document.createElement('div');
+
+    row.className = 'event-item';
+
+    const iconNode = document.createElement('span');
+
+    iconNode.className = `event-icon ${iconClass}`;
+    iconNode.textContent = icon;
+
+    const copy = document.createElement('div');
+
+    copy.className = 'event-copy';
+
+    const heading = document.createElement('strong');
+
+    heading.textContent = title;
+
+    const caption = document.createElement('small');
+
+    caption.textContent = detail;
+
+    copy.append(heading, caption);
+
+    const timeNode = document.createElement('time');
+
+    timeNode.textContent = time;
+
+    row.append(iconNode, copy, timeNode);
+
+    list.prepend(row);
+
+    while (list.children.length > 6) {
+      list.lastElementChild.remove();
+    }
+  }
+
+  // ==========================================
+  // FINISH DIAGNOSTIC
+  // ==========================================
+
+  function finishDiagnostic(cancelled = false) {
+    clearInterval(state.testTimer);
+
+    state.testTimer = null;
+    state.running = false;
+
+    const overlay = $('#testOverlay');
+
+    if (overlay) {
+      overlay.hidden = true;
+    }
+
+    if (cancelled) {
+      showToast(
+        'Diagnostic cancelled. No live network data was changed.'
+      );
+
+      addEvent(
+        'Diagnostic cancelled',
+        'Prototype test was stopped by the user',
+        'warn'
+      );
+
+      return;
+    }
+
+    const profile =
+      demoProfiles[state.selectedNetwork] ||
+      demoProfiles['4G LTE'];
+
+    renderProfile(state.selectedNetwork);
+
+    addEvent(
+      'Connection test completed',
+      `${state.selectedNetwork} · Demo score ${profile.score}/100`,
+      'success'
+    );
+
+    showToast(
+      `Demo diagnostics finished: ${profile.score}/100. Connect a probe/API for real readings.`
+    );
+  }
+
+  // ==========================================
+  // RUN NETWORK DIAGNOSTICS
+  // ==========================================
+
+  function runDiagnostic() {
+    if (state.running) return;
+
+    state.running = true;
+    state.progress = 0;
+
+    const overlay = $('#testOverlay');
+
+    if (overlay) {
+      overlay.hidden = false;
+    }
+
+    setText(
+      '#testTitle',
+      'Checking connection'
+    );
+
+    setText(
+      '#testDescription',
+      'Running a simulated diagnostic sequence. This does not measure the live network yet.'
+    );
+
+    const progressBar = $('#testProgressBar');
+
+    if (progressBar) {
+      progressBar.style.width = '0%';
+    }
+
+    setText('#testPercent', '0%');
+    setText('#testStep', 'Initialising');
+
+    const steps = [
+      {
+        at: 15,
+        text: 'Preparing diagnostic sequence'
+      },
+      {
+        at: 35,
+        text: 'Evaluating latency profile'
+      },
+      {
+        at: 58,
+        text: 'Reviewing packet-loss profile'
+      },
+      {
+        at: 78,
+        text: 'Comparing network score'
+      },
+      {
+        at: 100,
+        text: 'Preparing summary'
+      }
     ];
 
-    return allowed.includes(value)
-        ? value
-        : "dashboard";
-}
+    state.testTimer = setInterval(() => {
+      state.progress = Math.min(
+        100,
+        state.progress + 4 + Math.floor(Math.random() * 5)
+      );
 
+      if (progressBar) {
+        progressBar.style.width = `${state.progress}%`;
+      }
 
-function showPage(pageName) {
-    const page = normalizePageName(pageName);
+      setText(
+        '#testPercent',
+        `${state.progress}%`
+      );
 
-    state.currentPage = page;
+      const currentStep = [...steps]
+        .reverse()
+        .find(step => state.progress >= step.at) || steps[0];
 
-    const sections = document.querySelectorAll(
-        "[data-page], .page-section, .app-section"
-    );
+      setText(
+        '#testStep',
+        currentStep.text
+      );
 
-    sections.forEach(section => {
-        const sectionPage =
-            section.dataset.page ||
-            section.id.replace(/^page-/, "").replace(/-section$/, "");
+      if (state.progress >= 100) {
+        finishDiagnostic(false);
+      }
+    }, 150);
+  }
 
-        if (
-            sectionPage === page ||
-            section.id === page ||
-            section.id === `${page}-section` ||
-            section.id === `page-${page}`
-        ) {
-            section.hidden = false;
+  // ==========================================
+  // CHART RANGE
+  // ==========================================
 
-            section.classList.add("active");
+  function updateChartRange(range) {
+    const labels = $('#chartLabels');
 
-            section.setAttribute("aria-hidden", "false");
-        } else {
-            section.hidden = true;
+    if (!labels) return;
 
-            section.classList.remove("active");
+    const map = {
+      '1h': [
+        '09:00',
+        '09:05',
+        '09:10',
+        '09:15',
+        '09:20',
+        '09:25',
+        '09:30'
+      ],
 
-            section.setAttribute("aria-hidden", "true");
-        }
-    });
+      '24h': [
+        '00:00',
+        '04:00',
+        '08:00',
+        '12:00',
+        '16:00',
+        '20:00',
+        '24:00'
+      ],
 
-    // Support navigation links using data-page-target.
-    document.querySelectorAll(
-        "[data-page-target]"
-    ).forEach(button => {
-        const active =
-            button.dataset.pageTarget === page;
-
-        button.classList.toggle("active", active);
-
-        if (active) {
-            button.setAttribute("aria-current", "page");
-        } else {
-            button.removeAttribute("aria-current");
-        }
-    });
-
-    // Support buttons and links with data-page.
-    document.querySelectorAll(
-        "[data-nav-page]"
-    ).forEach(button => {
-        button.classList.toggle(
-            "active",
-            button.dataset.navPage === page
-        );
-    });
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-
-    if (page === "network") {
-        loadNetworkPage();
-    }
-
-    if (page === "device") {
-        loadDevice();
-    }
-
-    if (page === "diagnostics") {
-        loadDiagnosticsSummary();
-    }
-}
-
-
-function initializeNavigation() {
-    document.addEventListener("click", event => {
-        const button = event.target.closest(
-            "[data-page-target], [data-nav-page]"
-        );
-
-        if (!button) return;
-
-        const target =
-            button.dataset.pageTarget ||
-            button.dataset.navPage;
-
-        if (!target) return;
-
-        event.preventDefault();
-
-        showPage(target);
-    });
-
-    // Support common existing navigation IDs.
-    const fallbackNavigation = {
-        "nav-dashboard": "dashboard",
-        "nav-network": "network",
-        "nav-diagnostics": "diagnostics",
-        "nav-device": "device"
+      '7d': [
+        'Mon',
+        'Tue',
+        'Wed',
+        'Thu',
+        'Fri',
+        'Sat',
+        'Sun'
+      ]
     };
 
-    Object.entries(fallbackNavigation).forEach(
-        ([id, page]) => {
-            const element = $(id);
+    if (!map[range]) return;
 
-            if (!element) return;
+    labels.replaceChildren(
+      ...map[range].map(text => {
+        const span = document.createElement('span');
 
-            element.addEventListener("click", event => {
-                event.preventDefault();
-                showPage(page);
+        span.textContent = text;
+
+        return span;
+      })
+    );
+
+    showToast(
+      `Chart range changed to ${
+        range === '1h'
+          ? 'last hour'
+          : range === '24h'
+            ? 'last 24 hours'
+            : 'last 7 days'
+      }. Trend is illustrative.`
+    );
+  }
+
+  // ==========================================
+  // NAVIGATION
+  // ==========================================
+
+  function setupNavigation() {
+    const titleMap = {
+      dashboard: 'Overview',
+      monitor: 'Live monitor',
+      diagnostics: 'Diagnostics',
+      history: 'Test history',
+      settings: 'Settings'
+    };
+
+    $$('.nav-link').forEach(link => {
+      link.addEventListener('click', event => {
+        event.preventDefault();
+
+        const view = link.dataset.view;
+
+        $$('.nav-link').forEach(item => {
+          item.classList.toggle(
+            'active',
+            item === link
+          );
+        });
+
+        setText(
+          '#pageTitle',
+          titleMap[view] || 'Overview'
+        );
+
+        const targets = {
+          dashboard: '#dashboard',
+          monitor: '#monitor',
+          diagnostics: '#diagnostics',
+          history: '#history',
+          settings: null
+        };
+
+        if (view === 'settings') {
+          showToast(
+            'Settings panel is planned for a future prototype version.'
+          );
+        } else {
+          const target = $(targets[view]);
+
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
             });
-        }
-    );
-}
-
-
-/* =========================================================
-   NETWORK SCORE
-   ========================================================= */
-
-function updateNetworkScore(data) {
-    if (!data) return;
-
-    const score = Number(data.score);
-
-    const validScore =
-        Number.isFinite(score)
-        && score >= 0
-        && score <= 100;
-
-    setText(
-        "networkScore",
-        validScore ? Math.round(score) : "N/A"
-    );
-
-    setText(
-        "networkQuality",
-        data.quality || "UNKNOWN"
-    );
-
-    setText(
-        "scoreDescription",
-        data.score_description ||
-        data.description ||
-        "Waiting for network measurements."
-    );
-
-    const scoreBar = $("scoreBar");
-
-    if (scoreBar && validScore) {
-        scoreBar.style.width = `${score}%`;
-
-        scoreBar.setAttribute(
-            "aria-valuenow",
-            String(Math.round(score))
-        );
-    }
-
-    const quality = String(
-        data.quality || "UNKNOWN"
-    ).toUpperCase();
-
-    const scoreContainer =
-        $("networkScoreCard") ||
-        $("scoreCard");
-
-    if (scoreContainer) {
-        scoreContainer.dataset.quality =
-            quality.toLowerCase();
-    }
-}
-
-
-/* =========================================================
-   CONNECTION STATUS
-   ========================================================= */
-
-function updateConnectionStatus(data) {
-    if (!data) return;
-
-    const connected =
-        data.internet === true ||
-        String(data.status || "").toUpperCase() === "CONNECTED";
-
-    setText(
-        "connectionType",
-        data.connection_type ||
-        data.type ||
-        "UNKNOWN"
-    );
-
-    setText(
-        "wifiSSID",
-        data.ssid ||
-        data.name ||
-        "N/A"
-    );
-
-    setText(
-        "wifiStatus",
-        connected ? "Connected" : "Unavailable"
-    );
-
-    setText(
-        "ipAddress",
-        data.local_ip ||
-        data.ip ||
-        "N/A"
-    );
-
-    setText(
-        "networkType",
-        data.connection_type ||
-        data.type ||
-        "UNKNOWN"
-    );
-
-    setText(
-        "networkName",
-        data.name ||
-        data.ssid ||
-        "N/A"
-    );
-
-    setText(
-        "networkIP",
-        data.local_ip ||
-        data.ip ||
-        "N/A"
-    );
-
-    setText(
-        "networkGateway",
-        data.gateway ||
-        "N/A"
-    );
-
-    setText(
-        "networkInterface",
-        data.interface ||
-        "N/A"
-    );
-
-    setText(
-        "networkConnectionStatus",
-        connected ? "CONNECTED" : "OFFLINE"
-    );
-
-    const dot = $("connectionDot");
-
-    if (dot) {
-        dot.classList.toggle("online", connected);
-        dot.classList.toggle("offline", !connected);
-    }
-
-    const liveDot = $("liveDot");
-
-    if (liveDot) {
-        liveDot.classList.toggle("online", connected);
-        liveDot.classList.toggle("offline", !connected);
-    }
-
-    setText(
-        "systemStatus",
-        connected ? "ONLINE" : "OFFLINE"
-    );
-}
-
-
-/* =========================================================
-   NETWORK PERFORMANCE
-   ========================================================= */
-
-function updateNetworkPerformance(data) {
-    if (!data) return;
-
-    setText(
-        "latencyValue",
-        formatNumber(data.latency_ms, 1)
-    );
-
-    setText(
-        "jitterValue",
-        formatNumber(data.jitter_ms, 1)
-    );
-
-    setText(
-        "packetLossValue",
-        data.packet_loss_percent === null ||
-        data.packet_loss_percent === undefined
-            ? "N/A"
-            : formatNumber(data.packet_loss_percent, 1)
-    );
-
-    setText(
-        "signalValue",
-        data.signal || "N/A"
-    );
-
-    setText(
-        "downloadSpeed",
-        formatMbps(data.download_mbps)
-    );
-
-    setText(
-        "uploadSpeed",
-        formatMbps(data.upload_mbps)
-    );
-
-    setText(
-        "lastUpdate",
-        formatTimestamp(data.timestamp)
-    );
-
-    setText(
-        "networkLastUpdate",
-        formatTimestamp(data.timestamp)
-    );
-}
-
-
-/* =========================================================
-   INTELLILINK INTELLIGENCE
-   ========================================================= */
-
-function updateIntelligence(data) {
-    if (!data) return;
-
-    const intelligence =
-        data.intelligence || data;
-
-    setText(
-        "intelligencePriority",
-        intelligence.priority || "NORMAL"
-    );
-
-    setText(
-        "intelligenceAction",
-        intelligence.action || "Monitor network"
-    );
-
-    setText(
-        "intelligenceMessage",
-        intelligence.message ||
-        "Collecting network information."
-    );
-
-    const card = $("intelligenceCard");
-
-    if (card) {
-        card.dataset.priority = String(
-            intelligence.priority || "NORMAL"
-        ).toLowerCase();
-    }
-}
-
-
-/* =========================================================
-   NETWORK REFRESH
-   ========================================================= */
-
-async function refreshNetwork(options = {}) {
-    if (state.isRefreshing) return;
-
-    state.isRefreshing = true;
-
-    const button = $("refreshNetworkButton");
-
-    if (button) {
-        button.disabled = true;
-        button.classList.add("loading");
-    }
-
-    try {
-        const [networkResult, snapshotResult] =
-            await Promise.allSettled([
-                apiGet(`${ILX.api}/network`),
-                apiGet(`${ILX.api}/network/snapshot`)
-            ]);
-
-        if (networkResult.status === "fulfilled") {
-            state.network = networkResult.value;
-
-            updateConnectionStatus(
-                state.network
-            );
+          }
         }
 
-        if (snapshotResult.status === "fulfilled") {
-            state.snapshot = snapshotResult.value;
-
-            updateNetworkScore(
-                state.snapshot
-            );
-
-            updateNetworkPerformance(
-                state.snapshot
-            );
-
-            updateIntelligence(
-                state.snapshot
-            );
-        }
-
-        const failures = [
-            networkResult,
-            snapshotResult
-        ].filter(result =>
-            result.status === "rejected"
-        );
-
-        if (failures.length === 2) {
-            throw failures[0].reason;
-        }
-
-        if (options.notify) {
-            showToast(
-                "Network refreshed",
-                "Taarifa za mtandao zimesasishwa.",
-                "success"
-            );
-        }
-
-    } catch (error) {
-        console.error(
-            "Network refresh failed:",
-            error
-        );
-
-        if (options.notify) {
-            showToast(
-                "Network error",
-                error.message,
-                "error"
-            );
-        }
-
-    } finally {
-        state.isRefreshing = false;
-
-        if (button) {
-            button.disabled = false;
-            button.classList.remove("loading");
-        }
-    }
-}
-
-
-/* =========================================================
-   NETWORK PAGE
-   ========================================================= */
-
-async function loadNetworkPage() {
-    try {
-        const network = await apiGet(
-            `${ILX.api}/network`
-        );
-
-        state.network = network;
-
-        updateConnectionStatus(network);
-
-    } catch (error) {
-        console.error(
-            "Could not load network page:",
-            error
-        );
-    }
-}
-
-
-/* =========================================================
-   WIFI INFORMATION
-   ========================================================= */
-
-async function loadWiFiInformation() {
-    try {
-        const wifi = await apiGet(
-            `${ILX.api}/wifi`
-        );
-
-        if (wifi.ssid) {
-            setText("wifiSSID", wifi.ssid);
-            setText("networkName", wifi.ssid);
-        }
-
-        setText(
-            "wifiStatus",
-            wifi.status || "Unknown"
-        );
-
-        if (wifi.signal !== null && wifi.signal !== undefined) {
-            setText("signalValue", wifi.signal);
-        }
-
-    } catch (error) {
-        console.warn(
-            "Wi-Fi details unavailable:",
-            error.message
-        );
-    }
-}
-
-
-/* =========================================================
-   DEVICE IDENTITY
-   ========================================================= */
-
-async function loadDevice() {
-    try {
-        const device = await apiGet(
-            `${ILX.api}/device`
-        );
-
-        state.device = device;
-
-        setText(
-            "deviceStatus",
-            device.status || "ACTIVE"
-        );
-
-        setText(
-            "modelNumber",
-            device.model_number
-        );
-
-        setText(
-            "serialNumber",
-            device.serial_number
-        );
-
-        setText(
-            "deviceID",
-            device.device_id
-        );
-
-        setText(
-            "deviceUUID",
-            device.device_uuid ||
-            device.uuid
-        );
-
-        setText(
-            "smartCardNumber",
-            device.smart_card_number
-        );
-
-        setText(
-            "hardwareRevision",
-            device.hardware_revision
-        );
-
-        setText(
-            "firmwareVersion",
-            device.firmware_version
-        );
-
-        setText(
-            "softwareVersion",
-            device.software_version ||
-            ILX.version
-        );
-
-        setText(
-            "manufacturer",
-            device.manufacturer ||
-            "IntelliLink Systems"
-        );
-
-        setText(
-            "countryCode",
-            device.country_code ||
-            "TZ"
-        );
-
-        setText(
-            "timezone",
-            device.timezone ||
-            "Africa/Dar_es_Salaam"
-        );
-
-        setText(
-            "deviceType",
-            device.device_type ||
-            "Network Management System"
-        );
-
-        setText(
-            "platformSystem",
-            device.platform_system
-        );
-
-        setText(
-            "platformRelease",
-            device.platform_release
-        );
-
-        setText(
-            "platformArchitecture",
-            device.platform_architecture
-        );
-
-        setText(
-            "platformPython",
-            device.platform_python
-        );
-
-    } catch (error) {
-        console.error(
-            "Device identity loading failed:",
-            error
-        );
-
-        showToast(
-            "Device information",
-            "Taarifa za kifaa hazikupatikana.",
-            "warning"
-        );
-    }
-}
-
-
-/* =========================================================
-   DIAGNOSTICS
-   ========================================================= */
-
-async function loadDiagnosticsSummary() {
-    try {
-        const health = await apiGet("/health");
-
-        setText(
-            "diagPython",
-            "Available"
-        );
-
-        setText(
-            "diagInterface",
-            state.network?.interface || "--"
-        );
-
-        setText(
-            "diagGateway",
-            state.network?.gateway || "--"
-        );
-
-        setText(
-            "diagInternet",
-            state.network?.internet
-                ? "Connected"
-                : "Not confirmed"
-        );
-
-        if (health.status === "healthy") {
-            setText(
-                "diagnosticStatus",
-                "SYSTEM ONLINE"
-            );
-        }
-
-    } catch (error) {
-        console.warn(
-            "Health check failed:",
-            error
-        );
-    }
-}
-
-
-async function runDiagnostics() {
-    if (state.isDiagnosing) return;
-
-    state.isDiagnosing = true;
-
-    const button = $("runDiagnosticsButton");
-
-    if (button) {
-        button.disabled = true;
-        button.classList.add("loading");
-        button.textContent = "Checking...";
-    }
-
-    try {
-        const data = await apiGet(
-            `${ILX.api}/diagnostics`
-        );
-
-        state.diagnostics = data;
-
-        setText(
-            "diagnosticStatus",
-            data.status === "PASS"
-                ? "SYSTEM HEALTHY"
-                : "CHECK REQUIRED"
-        );
-
-        setText(
-            "diagPython",
-            data.python_version ||
-            data.python ||
-            "--"
-        );
-
-        setText(
-            "diagInterface",
-            data.network_interface ||
-            data.interface ||
-            "--"
-        );
-
-        setText(
-            "diagGateway",
-            data.default_gateway ||
-            data.gateway ||
-            "--"
-        );
-
-        setText(
-            "diagInternet",
-            data.internet ||
-            "UNKNOWN"
-        );
-
-        setText(
-            "diagnosticMessage",
-            data.message ||
-            "Diagnostics completed."
-        );
-
-        const icon = $("diagnosticStatusIcon");
-
-        if (icon) {
-            icon.textContent =
-                data.status === "PASS"
-                    ? "✓"
-                    : "!";
-        }
-
-        showToast(
-            "Diagnostics completed",
-            data.message ||
-                "Ukaguzi wa mfumo umekamilika.",
-            data.status === "PASS"
-                ? "success"
-                : "warning"
-        );
-
-    } catch (error) {
-        console.error(
-            "Diagnostics failed:",
-            error
-        );
-
-        setText(
-            "diagnosticStatus",
-            "DIAGNOSTICS FAILED"
-        );
-
-        setText(
-            "diagnosticMessage",
-            error.message
-        );
-
-        showToast(
-            "Diagnostics error",
-            error.message,
-            "error"
-        );
-
-    } finally {
-        state.isDiagnosing = false;
-
-        if (button) {
-            button.disabled = false;
-            button.classList.remove("loading");
-            button.textContent = "Run Full Diagnostics";
-        }
-    }
-}
-
-
-/* =========================================================
-   SPEED TEST
-   ========================================================= */
-
-async function runSpeedTest() {
-    if (state.isTestingSpeed) return;
-
-    state.isTestingSpeed = true;
-
-    const button = $("speedTestButton");
-
-    if (button) {
-        button.disabled = true;
-        button.classList.add("loading");
-        button.textContent = "Testing...";
-    }
-
-    try {
-        setText(
-            "speedServer",
-            "Connecting..."
-        );
-
-        setText(
-            "speedLatency",
-            "--"
-        );
-
-        setText(
-            "speedDownload",
-            "N/A"
-        );
-
-        setText(
-            "speedUpload",
-            "N/A"
-        );
-
-        const result = await apiGet(
-            `${ILX.api}/speed-test`
-        );
-
-        state.speedTest = result;
-
-        setText(
-            "speedServer",
-            result.server || "N/A"
-        );
-
-        setText(
-            "speedLatency",
-            formatMilliseconds(result.latency_ms)
-        );
-
-        setText(
-            "speedDownload",
-            formatMbps(result.download_mbps)
-        );
-
-        setText(
-            "speedUpload",
-            formatMbps(result.upload_mbps)
-        );
-
-        setText(
-            "speedTestResult",
-            result.message ||
-                result.status ||
-                "Test completed."
-        );
-
-        showToast(
-            "Connection test complete",
-            result.message ||
-                "Latency test completed.",
-            result.internet
-                ? "success"
-                : "warning"
-        );
-
-    } catch (error) {
-        console.error(
-            "Speed test failed:",
-            error
-        );
-
-        setText(
-            "speedTestResult",
-            error.message
-        );
-
-        showToast(
-            "Speed test failed",
-            error.message,
-            "error"
-        );
-
-    } finally {
-        state.isTestingSpeed = false;
-
-        if (button) {
-            button.disabled = false;
-            button.classList.remove("loading");
-            button.textContent = "Run Speed Test";
-        }
-    }
-}
-
-
-/* =========================================================
-   APPLICATION HEALTH
-   ========================================================= */
-
-async function checkApplicationHealth() {
-    try {
-        const health = await apiGet("/health");
-
-        const online =
-            health.status === "healthy";
-
-        setText(
-            "systemStatus",
-            online ? "ONLINE" : "DEGRADED"
-        );
-
-        setText(
-            "footerVersion",
-            `v${ILX.version} • Network Intelligence System`
-        );
-
-        return health;
-
-    } catch (error) {
-        console.error(
-            "Application health check failed:",
-            error
-        );
-
-        setText(
-            "systemStatus",
-            "API UNAVAILABLE"
-        );
-
-        return null;
-    }
-}
-
-
-/* =========================================================
-   DASHBOARD INITIALIZATION
-   ========================================================= */
-
-async function initializeDashboard() {
-    await checkApplicationHealth();
-
-    await Promise.allSettled([
-        loadDevice(),
-        loadWiFiInformation(),
-        refreshNetwork(),
-        loadDiagnosticsSummary()
-    ]);
-}
-
-
-/* =========================================================
-   EVENT LISTENERS
-   ========================================================= */
-
-function initializeButtons() {
-    const refreshButton = $("refreshNetworkButton");
-
-    if (refreshButton) {
-        refreshButton.addEventListener(
-            "click",
-            () => refreshNetwork({
-                notify: true
-            })
-        );
-    }
-
-    const scanButton = $("scanNetworkButton");
-
-    if (scanButton) {
-        scanButton.addEventListener(
-            "click",
-            async () => {
-                await refreshNetwork({
-                    notify: false
-                });
-
-                showToast(
-                    "Network scan complete",
-                    "Taarifa za connection zimesasishwa.",
-                    "success"
-                );
-            }
-        );
-    }
-
-    const speedButton = $("speedTestButton");
-
-    if (speedButton) {
-        speedButton.addEventListener(
-            "click",
-            runSpeedTest
-        );
-    }
-
-    const diagnosticsButton = $("runDiagnosticsButton");
-
-    if (diagnosticsButton) {
-        diagnosticsButton.addEventListener(
-            "click",
-            runDiagnostics
-        );
-    }
-}
-
-
-/* =========================================================
-   AUTOMATIC REFRESH
-   ========================================================= */
-
-function startAutoRefresh() {
-    if (state.refreshTimer) {
-        clearInterval(state.refreshTimer);
-    }
-
-    state.refreshTimer = setInterval(() => {
-        if (document.hidden) return;
-
-        refreshNetwork();
-    }, ILX.refreshInterval);
-}
-
-
-/* =========================================================
-   PAGE VISIBILITY
-   ========================================================= */
-
-function initializeVisibilityHandler() {
-    document.addEventListener(
-        "visibilitychange",
-        () => {
-            if (!document.hidden && state.initialized) {
-                refreshNetwork();
-            }
-        }
-    );
-}
-
-
-/* =========================================================
-   NETWORK ERROR DISPLAY
-   ========================================================= */
-
-window.addEventListener("offline", () => {
-    setText("systemStatus", "OFFLINE");
-
-    showToast(
-        "Connection lost",
-        "Kifaa hakijathibitisha muunganisho wa intaneti.",
-        "warning"
-    );
-});
-
-
-window.addEventListener("online", () => {
-    showToast(
-        "Connection restored",
-        "Kifaa kimeripoti kuwa kimeunganishwa tena.",
-        "success"
-    );
-
-    refreshNetwork();
-});
-
-
-/* =========================================================
-   CLEANUP
-   ========================================================= */
-
-window.addEventListener("beforeunload", () => {
-    if (state.refreshTimer) {
-        clearInterval(state.refreshTimer);
-    }
-});
-
-
-/* =========================================================
-   APPLICATION START
-   ========================================================= */
-
-async function startIntelliLink() {
-    if (state.initialized) return;
-
-    state.initialized = true;
-
-    initializeNavigation();
-
-    initializeButtons();
-
-    initializeVisibilityHandler();
-
-    runSplashScreen();
-
-    showPage("dashboard");
-
-    startAutoRefresh();
-
-    // Keep the splash visible for its animation.
-    // API initialization continues without trapping the UI.
-    initializeDashboard().catch(error => {
-        console.error(
-            "Dashboard initialization failed:",
-            error
-        );
+        $('#sidebar')?.classList.remove('open');
+      });
     });
-}
+  }
 
+  // ==========================================
+  // DARK / LIGHT THEME
+  // ==========================================
 
-if (document.readyState === "loading") {
-    document.addEventListener(
-        "DOMContentLoaded",
-        startIntelliLink,
-        { once: true }
+  function setupTheme() {
+    let saved = null;
+
+    try {
+      saved = localStorage.getItem('intellilink-theme');
+    } catch (_) {
+      // Browser storage may be unavailable.
+    }
+
+    if (saved === 'light') {
+      document.body.classList.add('light-theme');
+    }
+
+    $('#themeToggle')?.addEventListener('click', () => {
+      document.body.classList.toggle('light-theme');
+
+      const theme =
+        document.body.classList.contains('light-theme')
+          ? 'light'
+          : 'dark';
+
+      try {
+        localStorage.setItem(
+          'intellilink-theme',
+          theme
+        );
+      } catch (_) {
+        // Storage can be disabled in private browsing.
+      }
+
+      showToast(
+        `${theme === 'light' ? 'Light' : 'Dark'} theme enabled.`
+      );
+    });
+  }
+
+  // ==========================================
+  // EVENT LISTENERS
+  // ==========================================
+
+  function bindEvents() {
+
+    // Network selection
+    $$('.network-row').forEach(row => {
+      row.tabIndex = 0;
+
+      row.setAttribute(
+        'role',
+        'button'
+      );
+
+      row.setAttribute(
+        'aria-pressed',
+        String(row.dataset.network === state.selectedNetwork)
+      );
+
+      const choose = () => {
+        const network = row.dataset.network;
+
+        if (connectedSources.has(network)) {
+          renderProfile(network, true);
+        } else {
+          showToast(
+            `${network} has no live sensor connected. This row is informational only.`
+          );
+
+          addEvent(
+            `${network} source unavailable`,
+            'Connect a compatible sensor or telemetry endpoint to monitor this source',
+            'warn'
+          );
+        }
+      };
+
+      row.addEventListener('click', choose);
+
+      row.addEventListener('keydown', event => {
+        if (
+          event.key === 'Enter' ||
+          event.key === ' '
+        ) {
+          event.preventDefault();
+          choose();
+        }
+      });
+    });
+
+    // Run diagnostic
+    $('#runTestBtn')?.addEventListener(
+      'click',
+      runDiagnostic
     );
-} else {
-    startIntelliLink();
-}
 
+    // Refresh dashboard
+    $('#refreshBtn')?.addEventListener('click', () => {
+      setUpdated();
 
-/* =========================================================
-   DEBUG ACCESS
-   ========================================================= */
+      const button = $('.refresh-symbol');
 
-window.IntelliLinkX1 = {
-    state,
-    refreshNetwork,
-    loadDevice,
-    runDiagnostics,
-    runSpeedTest,
-    showPage,
-    checkApplicationHealth
-};
+      if (button) {
+        button.style.transform = 'rotate(360deg)';
+
+        setTimeout(() => {
+          button.style.transform = '';
+        }, 350);
+      }
+
+      showToast(
+        'Dashboard refreshed. Readings remain demo values until live telemetry is connected.'
+      );
+    });
+
+    // Cancel diagnostic
+    $('#cancelTest')?.addEventListener(
+      'click',
+      () => finishDiagnostic(true)
+    );
+
+    // Chart range selector
+    $('#chartRange')?.addEventListener(
+      'change',
+      event => updateChartRange(event.target.value)
+    );
+
+    // Clear event log
+    $('#clearEvents')?.addEventListener('click', () => {
+      const list = $('#eventList');
+
+      if (!list) return;
+
+      list.replaceChildren();
+
+      const empty = document.createElement('div');
+
+      empty.className = 'empty-events';
+      empty.textContent = 'No events to display.';
+
+      list.append(empty);
+
+      showToast(
+        'Activity log cleared on this page.'
+      );
+    });
+
+    // Dismiss demo banner
+    $('#dismissBanner')?.addEventListener('click', () => {
+      $('.demo-banner')?.remove();
+    });
+
+    // View all networks
+    $('#viewAllNetworks')?.addEventListener('click', () => {
+      showToast(
+        'All five network types are listed. Only connected data sources can report live measurements.'
+      );
+    });
+
+    // Mobile menu
+    $('#menuToggle')?.addEventListener('click', () => {
+      $('#sidebar')?.classList.toggle('open');
+    });
+
+    // Close sidebar when clicking outside
+    document.addEventListener('click', event => {
+      const sidebar = $('#sidebar');
+
+      if (
+        sidebar?.classList.contains('open') &&
+        !sidebar.contains(event.target) &&
+        !$('#menuToggle')?.contains(event.target)
+      ) {
+        sidebar.classList.remove('open');
+      }
+    });
+
+    // Escape key cancels diagnostic
+    document.addEventListener('keydown', event => {
+      if (
+        event.key === 'Escape' &&
+        state.running
+      ) {
+        finishDiagnostic(true);
+      }
+    });
+  }
+
+  // ==========================================
+  // INITIALISE APPLICATION
+  // ==========================================
+
+  function init() {
+    setUpdated();
+
+    setupNavigation();
+    setupTheme();
+    bindEvents();
+
+    renderProfile('4G LTE');
+
+    /*
+     * IMPORTANT:
+     * This is a front-end prototype.
+     *
+     * The displayed network profiles are demonstration values.
+     * A browser-only API cannot reliably access all mobile radio
+     * metrics such as 5G band, RSRP, RSRQ and modem signal data.
+     *
+     * Connect a trusted backend or device telemetry endpoint
+     * before presenting these values as live measurements.
+     */
+  }
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    init,
+    { once: true }
+  );
+
+})();
