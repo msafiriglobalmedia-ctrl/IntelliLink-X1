@@ -54,6 +54,9 @@ BASE_DIR = Path(__file__).resolve().parent
 
 DATABASE_FILE = BASE_DIR / "intellilink.db"
 
+# Compatibility with code that expects DATABASE_PATH.
+DATABASE_PATH = DATABASE_FILE
+
 DATABASE_URL = f"sqlite:///{DATABASE_FILE}"
 
 
