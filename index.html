@@ -5,550 +5,1335 @@
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
     >
 
     <meta
         name="theme-color"
-        content="#07111f"
+        content="#070b16"
     >
 
     <meta
         name="description"
-        content="IntelliLink X1 Intelligent Network Management System"
+        content="IntelliLink X1 intelligent network management system."
     >
 
     <title>IntelliLink X1</title>
 
-    <!-- IntelliLink X1 stylesheet -->
     <link
         rel="stylesheet"
         href="/static/style.css"
     >
+
+    <script
+        src="/static/app.js"
+        defer
+    ></script>
 </head>
 
 <body>
 
-<!-- ========================================================
-     APPLICATION SHELL
-========================================================= -->
+    <!-- ==================================================
+         SPLASH SCREEN
+    =================================================== -->
 
-<div id="app">
+    <section
+        id="splashScreen"
+        class="splash-screen"
+        aria-label="IntelliLink X1 startup"
+    >
 
-    <!-- ====================================================
-         TOP BAR
-    ===================================================== -->
+        <div class="splash-orbit orbit-one"></div>
+        <div class="splash-orbit orbit-two"></div>
+        <div class="splash-orbit orbit-three"></div>
 
-    <header class="topbar">
+        <div class="splash-content">
 
-        <div class="brand">
+            <div class="brand-mark splash-mark">
 
-            <div class="brand-mark">
-                IL
-            </div>
+                <div class="brand-mark-inner">
+                    <span class="brand-mark-letter">I</span>
+                    <span class="brand-mark-letter accent-letter">X</span>
+                </div>
 
-            <div class="brand-text">
-
-                <strong>
-                    IntelliLink
-                </strong>
-
-                <span>
-                    X1
-                </span>
+                <span class="brand-mark-pulse"></span>
 
             </div>
 
+            <p class="eyebrow splash-eyebrow">
+                INTELLIGENT CONNECTIVITY
+            </p>
+
+            <h1 class="splash-title">
+                IntelliLink <span>X1</span>
+            </h1>
+
+            <p class="splash-subtitle">
+                Observe. Understand. Predict. Adapt.
+            </p>
+
+            <div class="splash-progress">
+                <span></span>
+            </div>
+
+            <p
+                id="splashStatus"
+                class="splash-status"
+                aria-live="polite"
+            >
+                Initializing system...
+            </p>
+
+            <p class="splash-developer">
+                POWERED BY MSAFIRI GROUP
+            </p>
+
         </div>
 
-
-        <div class="system-status">
-
-            <span
-                id="connectionDot"
-                class="status-dot"
-            ></span>
-
-            <span id="systemStatus">
-                INITIALIZING
-            </span>
-
-        </div>
-
-    </header>
+    </section>
 
 
-    <!-- ====================================================
-         MAIN NAVIGATION
-    ===================================================== -->
+    <!-- ==================================================
+         APPLICATION
+    =================================================== -->
 
-    <nav class="navigation">
+    <div
+        id="appShell"
+        class="app-shell app-hidden"
+    >
 
-        <button
-            class="nav-item active"
-            data-section="dashboard"
-        >
-            Dashboard
-        </button>
+        <!-- TOP BAR -->
 
-        <button
-            class="nav-item"
-            data-section="network"
-        >
-            Network
-        </button>
+        <header class="topbar">
 
-        <button
-            class="nav-item"
-            data-section="diagnostics"
-        >
-            Diagnostics
-        </button>
+            <a
+                href="#dashboard"
+                class="brand"
+                aria-label="IntelliLink X1 home"
+                data-page="dashboard"
+            >
 
-        <button
-            class="nav-item"
-            data-section="device"
-        >
-            Device
-        </button>
+                <div class="brand-mark brand-mark-small">
 
-    </nav>
-
-
-    <!-- ====================================================
-         MAIN CONTENT
-    ===================================================== -->
-
-    <main class="main-content">
-
-
-        <!-- =================================================
-             DASHBOARD SECTION
-        ================================================== -->
-
-        <section
-            id="dashboard"
-            class="page-section active"
-        >
-
-            <div class="page-heading">
-
-                <div>
-
-                    <p class="eyebrow">
-                        INTELLIGENT NETWORK MANAGEMENT
-                    </p>
-
-                    <h1>
-                        IntelliLink X1
-                    </h1>
-
-                    <p class="subtitle">
-                        Observe. Understand. Predict. Adapt.
-                    </p>
+                    <div class="brand-mark-inner">
+                        <span class="brand-mark-letter">I</span>
+                        <span class="brand-mark-letter accent-letter">X</span>
+                    </div>
 
                 </div>
 
-                <div class="live-indicator">
+                <div class="brand-copy">
+
+                    <span class="brand-name">
+                        IntelliLink <strong>X1</strong>
+                    </span>
+
+                    <span class="brand-caption">
+                        NETWORK INTELLIGENCE
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <div class="topbar-actions">
+
+                <div
+                    id="systemStatus"
+                    class="system-status"
+                >
 
                     <span
-                        id="liveDot"
+                        id="connectionDot"
                         class="status-dot"
                     ></span>
 
-                    <span>
-                        LIVE
+                    <span id="systemStatusText">
+                        CONNECTING
                     </span>
 
                 </div>
 
-            </div>
+                <button
+                    id="refreshNetworkButton"
+                    class="icon-button"
+                    type="button"
+                    aria-label="Refresh network"
+                    title="Refresh network"
+                >
 
-
-            <!-- =============================================
-                 NETWORK SCORE
-            ============================================== -->
-
-            <div class="hero-grid">
-
-                <div class="score-card">
-
-                    <div class="card-label">
-                        NETWORK SCORE
-                    </div>
-
-                    <div
-                        id="networkScore"
-                        class="network-score"
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        aria-hidden="true"
                     >
-                        --
-                    </div>
 
-                    <div
-                        id="networkQuality"
-                        class="network-quality"
-                    >
-                        ANALYZING
-                    </div>
+                        <path
+                            d="M20 7V3M20 7H16"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
 
-                    <div class="score-bar">
+                        <path
+                            d="M20 7A8 8 0 1 0 21 13"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
 
-                        <div
-                            id="scoreBar"
-                            class="score-progress"
-                            style="width: 0%"
-                        ></div>
+                    </svg>
 
-                    </div>
-
-                    <p
-                        id="scoreDescription"
-                        class="small-text"
-                    >
-                        Waiting for network measurements...
-                    </p>
-
-                </div>
-
-
-                <!-- =========================================
-                     ACTIVE CONNECTION
-                ========================================== -->
-
-                <div class="connection-card">
-
-                    <div class="card-label">
-                        ACTIVE CONNECTION
-                    </div>
-
-                    <div
-                        id="connectionType"
-                        class="large-value"
-                    >
-                        Wi-Fi
-                    </div>
-
-                    <div class="connection-details">
-
-                        <div>
-                            <span>
-                                SSID
-                            </span>
-
-                            <strong id="wifiSSID">
-                                --
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>
-                                STATUS
-                            </span>
-
-                            <strong id="wifiStatus">
-                                --
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>
-                                IP ADDRESS
-                            </span>
-
-                            <strong id="ipAddress">
-                                --
-                            </strong>
-                        </div>
-
-                    </div>
-
-                </div>
+                </button>
 
             </div>
 
+        </header>
 
-            <!-- =============================================
-                 PERFORMANCE GRID
-            ============================================== -->
 
-            <div class="section-title">
+        <!-- PAGE INTRO -->
 
-                <h2>
-                    Network Performance
-                </h2>
+        <section class="page-intro">
 
-                <span id="lastUpdated">
-                    Last update: --
-                </span>
+            <div>
 
-            </div>
+                <p class="eyebrow">
+                    INTELLIGENT NETWORK MANAGEMENT
+                </p>
 
-
-            <div class="metrics-grid">
-
-
-                <!-- LATENCY -->
-
-                <article class="metric-card">
-
-                    <div class="metric-header">
-
-                        <span>
-                            Latency
-                        </span>
-
-                        <span class="metric-icon">
-                            MS
-                        </span>
-
-                    </div>
-
-                    <div
-                        id="latencyValue"
-                        class="metric-value"
-                    >
-                        --
-                    </div>
-
-                    <div class="metric-unit">
-                        milliseconds
-                    </div>
-
-                </article>
-
-
-                <!-- JITTER -->
-
-                <article class="metric-card">
-
-                    <div class="metric-header">
-
-                        <span>
-                            Jitter
-                        </span>
-
-                        <span class="metric-icon">
-                            J
-                        </span>
-
-                    </div>
-
-                    <div
-                        id="jitterValue"
-                        class="metric-value"
-                    >
-                        --
-                    </div>
-
-                    <div class="metric-unit">
-                        milliseconds
-                    </div>
-
-                </article>
-
-
-                <!-- PACKET LOSS -->
-
-                <article class="metric-card">
-
-                    <div class="metric-header">
-
-                        <span>
-                            Packet Loss
-                        </span>
-
-                        <span class="metric-icon">
-                            %
-                        </span>
-
-                    </div>
-
-                    <div
-                        id="packetLossValue"
-                        class="metric-value"
-                    >
-                        --
-                    </div>
-
-                    <div class="metric-unit">
-                        percent
-                    </div>
-
-                </article>
-
-
-                <!-- SIGNAL -->
-
-                <article class="metric-card">
-
-                    <div class="metric-header">
-
-                        <span>
-                            Signal
-                        </span>
-
-                        <span class="metric-icon">
-                            RF
-                        </span>
-
-                    </div>
-
-                    <div
-                        id="signalValue"
-                        class="metric-value"
-                    >
-                        --
-                    </div>
-
-                    <div class="metric-unit">
-                        dBm
-                    </div>
-
-                </article>
-
-
-            </div>
-
-
-            <!-- =============================================
-                 SPEED
-            ============================================== -->
-
-            <div class="section-title">
-
-                <h2>
-                    Throughput
-                </h2>
-
-            </div>
-
-
-            <div class="speed-grid">
-
-                <div class="speed-card">
-
-                    <span>
-                        DOWNLOAD
-                    </span>
-
-                    <strong id="downloadSpeed">
-                        --
-                    </strong>
-
-                    <small>
-                        Mbps
-                    </small>
-
-                </div>
-
-
-                <div class="speed-card">
-
-                    <span>
-                        UPLOAD
-                    </span>
-
-                    <strong id="uploadSpeed">
-                        --
-                    </strong>
-
-                    <small>
-                        Mbps
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <!-- =============================================
-                 INTELLIGENCE
-            ============================================== -->
-
-            <div class="section-title">
-
-                <h2>
-                    IntelliLink Intelligence
-                </h2>
-
-            </div>
-
-
-            <div class="intelligence-card">
-
-                <div class="intelligence-status">
-
-                    <span
-                        id="intelligencePriority"
-                        class="priority-badge"
-                    >
-                        ANALYZING
-                    </span>
-
-                    <span
-                        id="intelligenceAction"
-                        class="action-text"
-                    >
-                        --
-                    </span>
-
-                </div>
+                <h1 id="pageTitle">
+                    Your Network, Understood.
+                </h1>
 
                 <p
-                    id="intelligenceMessage"
+                    id="pageDescription"
+                    class="page-description"
                 >
-                    IntelliLink is analyzing the current
-                    connectivity environment.
+                    Real-time network performance and system intelligence.
                 </p>
 
             </div>
 
+            <div class="live-indicator">
+
+                <span
+                    id="liveDot"
+                    class="live-dot"
+                ></span>
+
+                <span id="liveText">
+                    LIVE MONITORING
+                </span>
+
+            </div>
 
         </section>
 
 
+        <!-- NAVIGATION -->
 
-        <!-- =================================================
-             NETWORK SECTION
-        ================================================== -->
-
-        <section
-            id="network"
-            class="page-section"
+        <nav
+            class="main-navigation"
+            aria-label="Main navigation"
         >
 
-            <div class="page-heading">
+            <button
+                class="nav-item active"
+                type="button"
+                data-page="dashboard"
+            >
 
-                <div>
+                <span class="nav-icon">◈</span>
+                <span>Dashboard</span>
 
-                    <p class="eyebrow">
-                        CONNECTIVITY
-                    </p>
+            </button>
 
-                    <h1>
-                        Network Monitor
-                    </h1>
 
-                    <p class="subtitle">
-                        Real-time network performance analysis.
-                    </p>
+            <button
+                class="nav-item"
+                type="button"
+                data-page="network"
+            >
+
+                <span class="nav-icon">⌁</span>
+                <span>Network</span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                type="button"
+                data-page="diagnostics"
+            >
+
+                <span class="nav-icon">⌘</span>
+                <span>Diagnostics</span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                type="button"
+                data-page="device"
+            >
+
+                <span class="nav-icon">▣</span>
+                <span>Device</span>
+
+            </button>
+
+        </nav>
+
+
+        <!-- ==================================================
+             DASHBOARD PAGE
+        =================================================== -->
+
+        <main class="main-content">
+
+            <section
+                id="dashboardPage"
+                class="page-section active"
+                data-section="dashboard"
+            >
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            OVERVIEW
+                        </p>
+
+                        <h2>Network Dashboard</h2>
+
+                        <p class="section-subtitle">
+                            An intelligent view of your current connection.
+                        </p>
+
+                    </div>
+
+                    <span
+                        id="dashboardUpdated"
+                        class="updated-label"
+                    >
+                        Waiting for data
+                    </span>
 
                 </div>
 
-            </div>
+
+                <!-- SCORE + CONNECTION -->
+
+                <div class="dashboard-hero-grid">
+
+                    <article class="panel score-panel">
+
+                        <div class="panel-topline">
+
+                            <div>
+
+                                <p class="card-label">
+                                    NETWORK SCORE
+                                </p>
+
+                                <p class="muted-text">
+                                    Connection quality index
+                                </p>
+
+                            </div>
+
+                            <span class="card-symbol">
+                                ◈
+                            </span>
+
+                        </div>
 
 
-            <div class="network-panel">
+                        <div class="score-display">
 
-                <div class="panel-header">
+                            <div
+                                id="networkScore"
+                                class="score-number"
+                            >
+                                --
+                            </div>
 
-                    <h2>
-                        Current Network
-                    </h2>
+                            <span class="score-out-of">
+                                /100
+                            </span>
+
+                        </div>
+
+
+                        <div class="score-track">
+
+                            <div
+                                id="scoreBar"
+                                class="score-fill"
+                                style="width: 0%"
+                            ></div>
+
+                        </div>
+
+
+                        <div class="score-bottom">
+
+                            <span
+                                id="networkQuality"
+                                class="quality-badge"
+                            >
+                                WAITING
+                            </span>
+
+                            <span
+                                id="scoreDescription"
+                                class="score-description"
+                            >
+                                Waiting for network measurement.
+                            </span>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="panel connection-panel">
+
+                        <div class="panel-topline">
+
+                            <div>
+
+                                <p class="card-label">
+                                    ACTIVE CONNECTION
+                                </p>
+
+                                <h3 id="connectionType">
+                                    UNKNOWN
+                                </h3>
+
+                            </div>
+
+                            <div class="connection-icon">
+                                ⌁
+                            </div>
+
+                        </div>
+
+
+                        <div class="connection-details">
+
+                            <div class="detail-row">
+
+                                <span>Network name</span>
+
+                                <strong id="wifiSSID">
+                                    N/A
+                                </strong>
+
+                            </div>
+
+                            <div class="detail-row">
+
+                                <span>Connection status</span>
+
+                                <strong id="wifiStatus">
+                                    Checking...
+                                </strong>
+
+                            </div>
+
+                            <div class="detail-row">
+
+                                <span>Local IP</span>
+
+                                <strong id="ipAddress">
+                                    N/A
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="connection-footer">
+
+                            <span class="tiny-pulse"></span>
+
+                            <span id="connectionFooterText">
+                                Checking connectivity
+                            </span>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <!-- PERFORMANCE METRICS -->
+
+                <div class="section-heading compact-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            PERFORMANCE
+                        </p>
+
+                        <h2>Live Network Metrics</h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metrics-grid">
+
+                    <article class="panel metric-card">
+
+                        <div class="metric-top">
+
+                            <span class="metric-icon icon-blue">
+                                ↔
+                            </span>
+
+                            <span class="metric-label">
+                                LATENCY
+                            </span>
+
+                        </div>
+
+                        <div class="metric-value">
+
+                            <span id="latencyValue">--</span>
+
+                            <small>ms</small>
+
+                        </div>
+
+                        <p class="metric-footnote">
+                            TCP connection response
+                        </p>
+
+                    </article>
+
+
+                    <article class="panel metric-card">
+
+                        <div class="metric-top">
+
+                            <span class="metric-icon icon-purple">
+                                ≋
+                            </span>
+
+                            <span class="metric-label">
+                                JITTER
+                            </span>
+
+                        </div>
+
+                        <div class="metric-value">
+
+                            <span id="jitterValue">--</span>
+
+                            <small>ms</small>
+
+                        </div>
+
+                        <p class="metric-footnote">
+                            Response-time variation
+                        </p>
+
+                    </article>
+
+
+                    <article class="panel metric-card">
+
+                        <div class="metric-top">
+
+                            <span class="metric-icon icon-orange">
+                                %
+                            </span>
+
+                            <span class="metric-label">
+                                PACKET LOSS
+                            </span>
+
+                        </div>
+
+                        <div class="metric-value">
+
+                            <span id="packetLossValue">N/A</span>
+
+                            <small>%</small>
+
+                        </div>
+
+                        <p class="metric-footnote">
+                            Requires packet-loss measurement
+                        </p>
+
+                    </article>
+
+
+                    <article class="panel metric-card">
+
+                        <div class="metric-top">
+
+                            <span class="metric-icon icon-green">
+                                ▥
+                            </span>
+
+                            <span class="metric-label">
+                                SIGNAL
+                            </span>
+
+                        </div>
+
+                        <div class="metric-value">
+
+                            <span id="signalValue">N/A</span>
+
+                            <small id="signalUnit">dBm</small>
+
+                        </div>
+
+                        <p class="metric-footnote">
+                            Hardware-dependent measurement
+                        </p>
+
+                    </article>
+
+                </div>
+
+
+                <!-- THROUGHPUT -->
+
+                <div class="section-heading compact-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            BANDWIDTH
+                        </p>
+
+                        <h2>Throughput</h2>
+
+                    </div>
 
                     <button
-                        id="refreshNetworkButton"
-                        class="primary-button"
+                        id="speedTestButton"
+                        class="button button-primary"
+                        type="button"
+                    >
+
+                        <span>Run Speed Test</span>
+
+                        <span aria-hidden="true">↗</span>
+
+                    </button>
+
+                </div>
+
+
+                <div class="throughput-grid">
+
+                    <article class="panel throughput-card">
+
+                        <div class="throughput-heading">
+
+                            <span class="throughput-icon download-icon">
+                                ↓
+                            </span>
+
+                            <span>DOWNLOAD</span>
+
+                        </div>
+
+                        <div class="throughput-value">
+
+                            <strong id="downloadSpeed">
+                                N/A
+                            </strong>
+
+                            <span>Mbps</span>
+
+                        </div>
+
+                        <p>
+                            Download throughput
+                        </p>
+
+                    </article>
+
+
+                    <article class="panel throughput-card">
+
+                        <div class="throughput-heading">
+
+                            <span class="throughput-icon upload-icon">
+                                ↑
+                            </span>
+
+                            <span>UPLOAD</span>
+
+                        </div>
+
+                        <div class="throughput-value">
+
+                            <strong id="uploadSpeed">
+                                N/A
+                            </strong>
+
+                            <span>Mbps</span>
+
+                        </div>
+
+                        <p>
+                            Upload throughput
+                        </p>
+
+                    </article>
+
+                </div>
+
+
+                <!-- INTELLIGENCE -->
+
+                <div class="section-heading compact-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            DECISION SUPPORT
+                        </p>
+
+                        <h2>IntelliLink Intelligence</h2>
+
+                    </div>
+
+                </div>
+
+
+                <article class="panel intelligence-panel">
+
+                    <div class="intelligence-graphic">
+
+                        <div class="intelligence-orbit">
+                            <span>IX</span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="intelligence-content">
+
+                        <div class="intelligence-top">
+
+                            <span
+                                id="intelligencePriority"
+                                class="priority-badge"
+                            >
+                                ANALYZING
+                            </span>
+
+                            <span class="intelligence-label">
+                                SYSTEM RECOMMENDATION
+                            </span>
+
+                        </div>
+
+
+                        <h3 id="intelligenceAction">
+                            Analyzing connection
+                        </h3>
+
+
+                        <p id="intelligenceMessage">
+                            Network intelligence will appear after the first measurement.
+                        </p>
+
+                    </div>
+
+                </article>
+
+
+                <!-- RECENT ACTIVITY -->
+
+                <div class="section-heading compact-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            SYSTEM
+                        </p>
+
+                        <h2>System Overview</h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="system-overview-grid">
+
+                    <article class="panel overview-item">
+
+                        <span class="overview-icon">◷</span>
+
+                        <div>
+
+                            <p>System uptime</p>
+
+                            <strong id="systemUptime">
+                                --
+                            </strong>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="panel overview-item">
+
+                        <span class="overview-icon">▣</span>
+
+                        <div>
+
+                            <p>Device status</p>
+
+                            <strong id="deviceStatus">
+                                UNKNOWN
+                            </strong>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="panel overview-item">
+
+                        <span class="overview-icon">▤</span>
+
+                        <div>
+
+                            <p>Database</p>
+
+                            <strong id="databaseStatus">
+                                CHECKING
+                            </strong>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 NETWORK PAGE
+            =================================================== -->
+
+            <section
+                id="networkPage"
+                class="page-section"
+                data-section="network"
+                hidden
+            >
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            CONNECTIVITY
+                        </p>
+
+                        <h2>Network Monitor</h2>
+
+                        <p class="section-subtitle">
+                            Inspect the connection available to this device.
+                        </p>
+
+                    </div>
+
+                    <button
+                        id="scanNetworkButton"
+                        class="button button-primary"
+                        type="button"
+                    >
+                        Scan Network
+                    </button>
+
+                </div>
+
+
+                <article class="panel network-main-panel">
+
+                    <div class="panel-topline">
+
+                        <div>
+
+                            <p class="card-label">
+                                CURRENT NETWORK
+                            </p>
+
+                            <h3 id="networkConnectionStatus">
+                                Checking connection
+                            </h3>
+
+                        </div>
+
+                        <span class="network-large-icon">
+                            ⌁
+                        </span>
+
+                    </div>
+
+
+                    <div class="network-info-grid">
+
+                        <div class="network-info-item">
+
+                            <span>Connection type</span>
+
+                            <strong id="networkType">
+                                UNKNOWN
+                            </strong>
+
+                        </div>
+
+
+                        <div class="network-info-item">
+
+                            <span>Network name</span>
+
+                            <strong id="networkName">
+                                N/A
+                            </strong>
+
+                        </div>
+
+
+                        <div class="network-info-item">
+
+                            <span>Local IP address</span>
+
+                            <strong id="networkIP">
+                                N/A
+                            </strong>
+
+                        </div>
+
+
+                        <div class="network-info-item">
+
+                            <span>Default gateway</span>
+
+                            <strong id="networkGateway">
+                                N/A
+                            </strong>
+
+                        </div>
+
+
+                        <div class="network-info-item">
+
+                            <span>Network interface</span>
+
+                            <strong id="networkInterface">
+                                N/A
+                            </strong>
+
+                        </div>
+
+
+                        <div class="network-info-item">
+
+                            <span>Internet access</span>
+
+                            <strong id="networkInternetStatus">
+                                CHECKING
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+
+                <!-- SPEED TEST -->
+
+                <div class="section-heading compact-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            CONNECTION BENCHMARK
+                        </p>
+
+                        <h2>Speed Test</h2>
+
+                    </div>
+
+                </div>
+
+
+                <article class="panel speed-test-panel">
+
+                    <div class="speed-test-heading">
+
+                        <div class="speed-test-icon">
+                            ↗
+                        </div>
+
+                        <div>
+
+                            <h3>Connection Benchmark</h3>
+
+                            <p>
+                                Test connectivity and response time.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="speed-result-grid">
+
+                        <div class="speed-result-item">
+
+                            <span>Server</span>
+
+                            <strong id="speedServer">--</strong>
+
+                        </div>
+
+
+                        <div class="speed-result-item">
+
+                            <span>Latency</span>
+
+                            <strong id="speedLatency">--</strong>
+
+                        </div>
+
+
+                        <div class="speed-result-item">
+
+                            <span>Download</span>
+
+                            <strong id="speedDownload">N/A</strong>
+
+                        </div>
+
+
+                        <div class="speed-result-item">
+
+                            <span>Upload</span>
+
+                            <strong id="speedUpload">N/A</strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <p
+                        id="speedTestResult"
+                        class="inline-message"
+                        aria-live="polite"
+                    >
+                        Run the benchmark to inspect connectivity.
+                    </p>
+
+
+                    <p class="muted-text small-text">
+                        Download and upload throughput remain N/A until a real throughput test is implemented.
+                    </p>
+
+                </article>
+
+
+                <!-- NETWORK HISTORY -->
+
+                <div class="section-heading compact-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            MONITORING
+                        </p>
+
+                        <h2>Recent Measurements</h2>
+
+                    </div>
+
+                    <button
+                        id="refreshHistoryButton"
+                        class="button button-secondary"
+                        type="button"
+                    >
+                        Refresh History
+                    </button>
+
+                </div>
+
+
+                <article class="panel history-panel">
+
+                    <div class="table-scroll">
+
+                        <table class="data-table">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Score</th>
+                                    <th>Latency</th>
+                                    <th>Quality</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="networkHistoryBody">
+
+                                <tr>
+                                    <td
+                                        colspan="4"
+                                        class="table-empty"
+                                    >
+                                        Network history will appear here.
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- ==================================================
+                 DIAGNOSTICS PAGE
+            =================================================== -->
+
+            <section
+                id="diagnosticsPage"
+                class="page-section"
+                data-section="diagnostics"
+                hidden
+            >
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            SYSTEM HEALTH
+                        </p>
+
+                        <h2>Diagnostics Center</h2>
+
+                        <p class="section-subtitle">
+                            Check application runtime and connectivity.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <article class="panel diagnostics-hero">
+
+                    <div
+                        id="diagnosticStatusIcon"
+                        class="diagnostic-status-icon"
+                    >
+                        ?
+                    </div>
+
+                    <div class="diagnostic-hero-content">
+
+                        <span class="card-label">
+                            SYSTEM DIAGNOSTICS
+                        </span>
+
+                        <h3 id="diagnosticStatus">
+                            NOT TESTED
+                        </h3>
+
+                        <p id="diagnosticMessage">
+                            Run a diagnostic check to inspect the system.
+                        </p>
+
+                    </div>
+
+                    <button
+                        id="runDiagnosticsButton"
+                        class="button button-primary"
+                        type="button"
+                    >
+                        Run Full Diagnostics
+                    </button>
+
+                </article>
+
+
+                <div class="section-heading compact-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            TEST RESULTS
+                        </p>
+
+                        <h2>Diagnostic Checks</h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="diagnostic-grid">
+
+                    <article class="panel diagnostic-item">
+
+                        <span class="diagnostic-item-icon">⌘</span>
+
+                        <div>
+
+                            <p>Python runtime</p>
+
+                            <strong id="diagPython">--</strong>
+
+                        </div>
+
+                        <span
+                            id="diagPythonStatus"
+                            class="check-badge"
+                        >
+                            --
+                        </span>
+
+                    </article>
+
+
+                    <article class="panel diagnostic-item">
+
+                        <span class="diagnostic-item-icon">⌁</span>
+
+                        <div>
+
+                            <p>Network interface</p>
+
+                            <strong id="diagInterface">--</strong>
+
+                        </div>
+
+                        <span
+                            id="diagInterfaceStatus"
+                            class="check-badge"
+                        >
+                            --
+                        </span>
+
+                    </article>
+
+
+                    <article class="panel diagnostic-item">
+
+                        <span class="diagnostic-item-icon">⇄</span>
+
+                        <div>
+
+                            <p>Default gateway</p>
+
+                            <strong id="diagGateway">--</strong>
+
+                        </div>
+
+                        <span
+                            id="diagGatewayStatus"
+                            class="check-badge"
+                        >
+                            --
+                        </span>
+
+                    </article>
+
+
+                    <article class="panel diagnostic-item">
+
+                        <span class="diagnostic-item-icon">◎</span>
+
+                        <div>
+
+                            <p>Internet access</p>
+
+                            <strong id="diagInternet">--</strong>
+
+                        </div>
+
+                        <span
+                            id="diagInternetStatus"
+                            class="check-badge"
+                        >
+                            --
+                        </span>
+
+                    </article>
+
+                </div>
+
+
+                <article class="panel diagnostics-note">
+
+                    <span class="note-icon">i</span>
+
+                    <div>
+
+                        <h3>Diagnostic information</h3>
+
+                        <p>
+                            Some network details depend on the permissions and capabilities of the operating system hosting IntelliLink X1. A missing gateway or interface does not automatically mean that the internet is disconnected.
+                        </p>
+
+                    </div>
+
+                </article>
+
+
+                <div class="section-heading compact-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            HISTORY
+                        </p>
+
+                        <h2>Previous Diagnostic Runs</h2>
+
+                    </div>
+
+                    <button
+                        id="refreshDiagnosticHistoryButton"
+                        class="button button-secondary"
+                        type="button"
                     >
                         Refresh
                     </button>
@@ -556,682 +1341,445 @@
                 </div>
 
 
-                <div class="network-information-grid">
+                <article class="panel history-panel">
 
-                    <div class="info-item">
+                    <div class="table-scroll">
 
-                        <span>
-                            Connection Type
-                        </span>
+                        <table class="data-table">
 
-                        <strong id="networkType">
-                            Wi-Fi
-                        </strong>
+                            <thead>
 
-                    </div>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Internet</th>
+                                    <th>Interface</th>
+                                </tr>
 
+                            </thead>
 
-                    <div class="info-item">
+                            <tbody id="diagnosticHistoryBody">
 
-                        <span>
-                            Network Name
-                        </span>
+                                <tr>
+                                    <td
+                                        colspan="4"
+                                        class="table-empty"
+                                    >
+                                        No diagnostic history loaded.
+                                    </td>
+                                </tr>
 
-                        <strong id="networkName">
-                            --
-                        </strong>
+                            </tbody>
 
-                    </div>
-
-
-                    <div class="info-item">
-
-                        <span>
-                            Local IP
-                        </span>
-
-                        <strong id="networkIP">
-                            --
-                        </strong>
+                        </table>
 
                     </div>
 
+                </article>
 
-                    <div class="info-item">
-
-                        <span>
-                            Gateway
-                        </span>
-
-                        <strong id="networkGateway">
-                            --
-                        </strong>
-
-                    </div>
+            </section>
 
 
-                    <div class="info-item">
+            <!-- ==================================================
+                 DEVICE PAGE
+            =================================================== -->
 
-                        <span>
-                            Interface
-                        </span>
-
-                        <strong id="networkInterface">
-                            --
-                        </strong>
-
-                    </div>
-
-
-                    <div class="info-item">
-
-                        <span>
-                            Connection Status
-                        </span>
-
-                        <strong id="networkConnectionStatus">
-                            --
-                        </strong>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- Network action -->
-
-            <div class="network-actions">
-
-                <button
-                    id="scanNetworkButton"
-                    class="primary-button large-button"
-                >
-                    Scan Network
-                </button>
-
-                <button
-                    id="speedTestButton"
-                    class="secondary-button large-button"
-                >
-                    Run Speed Test
-                </button>
-
-            </div>
-
-
-            <!-- Speed test result -->
-
-            <div
-                id="speedTestResult"
-                class="result-panel hidden"
+            <section
+                id="devicePage"
+                class="page-section"
+                data-section="device"
+                hidden
             >
 
-                <h2>
-                    Speed Test Result
-                </h2>
-
-                <div class="result-grid">
+                <div class="section-heading">
 
                     <div>
-                        <span>
-                            Server
-                        </span>
 
-                        <strong id="speedServer">
-                            --
-                        </strong>
+                        <p class="eyebrow">
+                            DEVICE IDENTITY
+                        </p>
+
+                        <h2>IntelliLink Device</h2>
+
+                        <p class="section-subtitle">
+                            Product identity and runtime information.
+                        </p>
+
                     </div>
 
-                    <div>
-                        <span>
-                            Latency
-                        </span>
+                    <span
+                        id="deviceStatusBadge"
+                        class="quality-badge"
+                    >
+                        LOADING
+                    </span>
 
-                        <strong id="speedLatency">
-                            --
-                        </strong>
+                </div>
+
+
+                <!-- DEVICE HERO -->
+
+                <article class="panel device-hero">
+
+                    <div class="device-art">
+
+                        <div class="device-art-ring ring-a"></div>
+                        <div class="device-art-ring ring-b"></div>
+
+                        <div class="device-art-logo">
+
+                            <span>I</span>
+                            <span>X</span>
+
+                        </div>
+
                     </div>
 
-                    <div>
-                        <span>
-                            Download
-                        </span>
 
-                        <strong id="speedDownload">
-                            --
-                        </strong>
-                    </div>
+                    <div class="device-hero-copy">
 
-                    <div>
-                        <span>
-                            Upload
-                        </span>
+                        <p class="eyebrow">
+                            INTELLILINK X-SERIES
+                        </p>
 
-                        <strong id="speedUpload">
-                            --
-                        </strong>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-        </section>
-
-
-
-        <!-- =================================================
-             DIAGNOSTICS SECTION
-        ================================================== -->
-
-        <section
-            id="diagnostics"
-            class="page-section"
-        >
-
-            <div class="page-heading">
-
-                <div>
-
-                    <p class="eyebrow">
-                        SYSTEM HEALTH
-                    </p>
-
-                    <h1>
-                        Diagnostics
-                    </h1>
-
-                    <p class="subtitle">
-                        IntelliLink X1 connectivity diagnostics.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="diagnostic-status-card">
-
-                <div
-                    id="diagnosticStatusIcon"
-                    class="diagnostic-icon"
-                >
-                    ?
-                </div>
-
-                <div>
-
-                    <span>
-                        SYSTEM STATUS
-                    </span>
-
-                    <strong id="diagnosticStatus">
-                        NOT TESTED
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-            <div class="diagnostic-grid">
-
-                <div class="diagnostic-item">
-
-                    <span>
-                        Python Runtime
-                    </span>
-
-                    <strong id="diagPython">
-                        --
-                    </strong>
-
-                </div>
-
-
-                <div class="diagnostic-item">
-
-                    <span>
-                        Network Interface
-                    </span>
-
-                    <strong id="diagInterface">
-                        --
-                    </strong>
-
-                </div>
-
-
-                <div class="diagnostic-item">
-
-                    <span>
-                        Gateway
-                    </span>
-
-                    <strong id="diagGateway">
-                        --
-                    </strong>
-
-                </div>
-
-
-                <div class="diagnostic-item">
-
-                    <span>
-                        Internet
-                    </span>
-
-                    <strong id="diagInternet">
-                        --
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-            <button
-                id="runDiagnosticsButton"
-                class="primary-button large-button"
-            >
-                Run Full Diagnostics
-            </button>
-
-
-            <div
-                id="diagnosticMessage"
-                class="diagnostic-message"
-            >
-                Diagnostic results will appear here.
-            </div>
-
-        </section>
-
-
-
-        <!-- =================================================
-             DEVICE SECTION
-        ================================================== -->
-
-        <section
-            id="device"
-            class="page-section"
-        >
-
-            <div class="page-heading">
-
-                <div>
-
-                    <p class="eyebrow">
-                        DEVICE IDENTITY
-                    </p>
-
-                    <h1>
-                        IntelliLink X1
-                    </h1>
-
-                    <p class="subtitle">
-                        Device identity and system information.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="device-card">
-
-                <div class="device-header">
-
-                    <div class="device-symbol">
-                        X1
-                    </div>
-
-                    <div>
-
-                        <h2>
+                        <h3 id="deviceProductName">
                             IntelliLink X1
-                        </h2>
+                        </h3>
 
-                        <span
-                            id="deviceStatus"
-                            class="device-status"
-                        >
-                            --
-                        </span>
+                        <p id="deviceType">
+                            Network Management System
+                        </p>
+
+                        <div class="device-version-row">
+
+                            <span class="version-pill">
+                                Firmware
+                                <strong id="firmwareVersion">--</strong>
+                            </span>
+
+                            <span class="version-pill">
+                                Software
+                                <strong id="softwareVersion">--</strong>
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+
+                <!-- DEVICE IDENTIFIERS -->
+
+                <div class="section-heading compact-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            IDENTITY
+                        </p>
+
+                        <h2>Device Identifiers</h2>
 
                     </div>
 
                 </div>
 
 
-                <div class="identity-grid">
+                <div class="device-details-grid">
+
+                    <article class="panel device-detail-card">
+
+                        <span>Model number</span>
+
+                        <strong id="modelNumber">--</strong>
+
+                    </article>
 
 
-                    <div class="identity-item">
+                    <article class="panel device-detail-card">
 
-                        <span>
-                            Model Number
-                        </span>
+                        <span>Serial number</span>
 
-                        <strong id="modelNumber">
-                            --
-                        </strong>
+                        <strong id="serialNumber">--</strong>
+
+                    </article>
+
+
+                    <article class="panel device-detail-card">
+
+                        <span>Device ID</span>
+
+                        <strong id="deviceID">--</strong>
+
+                    </article>
+
+
+                    <article class="panel device-detail-card">
+
+                        <span>Device UUID</span>
+
+                        <strong id="deviceUUID">--</strong>
+
+                    </article>
+
+
+                    <article class="panel device-detail-card">
+
+                        <span>Internal smart card ID</span>
+
+                        <strong id="smartCardNumber">N/A</strong>
+
+                    </article>
+
+
+                    <article class="panel device-detail-card">
+
+                        <span>Hardware revision</span>
+
+                        <strong id="hardwareRevision">--</strong>
+
+                    </article>
+
+
+                    <article class="panel device-detail-card">
+
+                        <span>Manufacturer</span>
+
+                        <strong id="manufacturer">--</strong>
+
+                    </article>
+
+
+                    <article class="panel device-detail-card">
+
+                        <span>Country code</span>
+
+                        <strong id="countryCode">--</strong>
+
+                    </article>
+
+
+                    <article class="panel device-detail-card">
+
+                        <span>Timezone</span>
+
+                        <strong id="timezone">--</strong>
+
+                    </article>
+
+                </div>
+
+
+                <!-- PLATFORM -->
+
+                <div class="section-heading compact-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            RUNTIME
+                        </p>
+
+                        <h2>Platform Information</h2>
+
+                    </div>
+
+                </div>
+
+
+                <article class="panel platform-panel">
+
+                    <div class="platform-row">
+
+                        <span>Operating system</span>
+
+                        <strong id="platformSystem">--</strong>
 
                     </div>
 
 
-                    <div class="identity-item">
+                    <div class="platform-row">
 
-                        <span>
-                            Serial Number
-                        </span>
+                        <span>OS release</span>
 
-                        <strong id="serialNumber">
-                            --
-                        </strong>
+                        <strong id="platformRelease">--</strong>
 
                     </div>
 
 
-                    <div class="identity-item">
+                    <div class="platform-row">
 
-                        <span>
-                            Device ID
-                        </span>
+                        <span>Architecture</span>
 
-                        <strong id="deviceID">
-                            --
-                        </strong>
+                        <strong id="platformArchitecture">--</strong>
 
                     </div>
 
 
-                    <div class="identity-item">
+                    <div class="platform-row">
 
-                        <span>
-                            Device UUID
-                        </span>
+                        <span>Python version</span>
 
-                        <strong
-                            id="deviceUUID"
-                            class="breakable"
-                        >
-                            --
-                        </strong>
+                        <strong id="platformPython">--</strong>
 
                     </div>
 
 
-                    <div class="identity-item">
+                    <div class="platform-row">
 
-                        <span>
-                            Smart Card Number
-                        </span>
+                        <span>Hostname</span>
 
-                        <strong
-                            id="smartCardNumber"
-                            class="breakable"
-                        >
-                            --
-                        </strong>
+                        <strong id="deviceHostname">--</strong>
 
                     </div>
 
 
-                    <div class="identity-item">
+                    <div class="platform-row">
 
-                        <span>
-                            Hardware Revision
-                        </span>
+                        <span>Local IP</span>
 
-                        <strong id="hardwareRevision">
-                            --
-                        </strong>
+                        <strong id="deviceLocalIP">--</strong>
 
                     </div>
 
 
-                    <div class="identity-item">
+                    <div class="platform-row">
 
-                        <span>
-                            Firmware Version
-                        </span>
+                        <span>Database status</span>
 
-                        <strong id="firmwareVersion">
-                            --
-                        </strong>
+                        <strong id="deviceDatabaseStatus">--</strong>
 
                     </div>
 
-
-                    <div class="identity-item">
-
-                        <span>
-                            Software Version
-                        </span>
-
-                        <strong id="softwareVersion">
-                            --
-                        </strong>
-
-                    </div>
+                </article>
 
 
-                    <div class="identity-item">
+                <article class="panel identity-note">
 
-                        <span>
-                            Manufacturer
-                        </span>
+                    <span class="note-icon">i</span>
 
-                        <strong id="manufacturer">
-                            --
-                        </strong>
+                    <p>
+                        IntelliLink-generated identifiers are internal prototype identifiers. They are not IMEI, IMSI, ICCID, or real SIM-card identities. Real hardware identifiers require supported physical hardware and authorized system access.
+                    </p>
 
-                    </div>
+                </article>
 
+            </section>
 
-                    <div class="identity-item">
-
-                        <span>
-                            Country
-                        </span>
-
-                        <strong id="countryCode">
-                            --
-                        </strong>
-
-                    </div>
+        </main>
 
 
-                    <div class="identity-item">
+        <!-- FOOTER -->
 
-                        <span>
-                            Timezone
-                        </span>
+        <footer class="app-footer">
 
-                        <strong id="timezone">
-                            --
-                        </strong>
+            <div class="footer-brand">
 
-                    </div>
+                <div class="footer-mark">
+                    IX
+                </div>
 
+                <div>
 
-                    <div class="identity-item">
+                    <strong>IntelliLink X1</strong>
 
-                        <span>
-                            Device Type
-                        </span>
-
-                        <strong id="deviceType">
-                            --
-                        </strong>
-
-                    </div>
+                    <span>
+                        Intelligent Network Management
+                    </span>
 
                 </div>
 
             </div>
 
 
-            <!-- Platform information -->
+            <div class="footer-meta">
 
-            <div class="section-title">
+                <span id="footerVersion">
+                    v0.1.0
+                </span>
 
-                <h2>
-                    Platform
-                </h2>
+                <span class="footer-separator">•</span>
 
-            </div>
-
-
-            <div class="platform-grid">
-
-                <div class="info-item">
-
-                    <span>
-                        Operating System
-                    </span>
-
-                    <strong id="platformSystem">
-                        --
-                    </strong>
-
-                </div>
-
-
-                <div class="info-item">
-
-                    <span>
-                        OS Release
-                    </span>
-
-                    <strong id="platformRelease">
-                        --
-                    </strong>
-
-                </div>
-
-
-                <div class="info-item">
-
-                    <span>
-                        Architecture
-                    </span>
-
-                    <strong id="platformArchitecture">
-                        --
-                    </strong>
-
-                </div>
-
-
-                <div class="info-item">
-
-                    <span>
-                        Python
-                    </span>
-
-                    <strong id="platformPython">
-                        --
-                    </strong>
-
-                </div>
+                <span>
+                    MSAFIRI GROUP
+                </span>
 
             </div>
 
 
-        </section>
+            <p class="footer-disclaimer">
+                Software prototype · Measurements depend on system capabilities
+            </p>
 
-    </main>
-
-
-    <!-- ====================================================
-         FOOTER
-    ===================================================== -->
-
-    <footer class="footer">
-
-        <div>
-            IntelliLink X1
-        </div>
-
-        <div>
-            <span id="footerVersion">
-                V0.1.0
-            </span>
-
-            <span>
-                •
-            </span>
-
-            <span>
-                Network Intelligence System
-            </span>
-        </div>
-
-    </footer>
-
-</div>
-
-
-<!-- ========================================================
-     GLOBAL LOADING OVERLAY
-========================================================= -->
-
-<div
-    id="loadingOverlay"
-    class="loading-overlay hidden"
->
-
-    <div class="loading-box">
-
-        <div class="loader"></div>
-
-        <strong>
-            IntelliLink X1
-        </strong>
-
-        <span id="loadingMessage">
-            Processing...
-        </span>
+        </footer>
 
     </div>
 
-</div>
+
+    <!-- ==================================================
+         LOADING OVERLAY
+    =================================================== -->
+
+    <div
+        id="loadingOverlay"
+        class="loading-overlay"
+        hidden
+    >
+
+        <div class="loading-card">
+
+            <div class="mini-loader"></div>
+
+            <p id="loadingMessage">
+                Processing request...
+            </p>
+
+        </div>
+
+    </div>
 
 
-<!-- ========================================================
-     TOAST NOTIFICATION
-========================================================= -->
+    <!-- ==================================================
+         TOAST NOTIFICATIONS
+    =================================================== -->
 
-<div
-    id="toast"
-    class="toast hidden"
->
+    <div
+        id="toast"
+        class="toast"
+        role="status"
+        aria-live="polite"
+        hidden
+    >
 
-    <strong id="toastTitle">
-        IntelliLink
-    </strong>
+        <span
+            id="toastIcon"
+            class="toast-icon"
+        >
+            ✓
+        </span>
 
-    <span id="toastMessage">
-        --
-    </span>
+        <div>
 
-</div>
+            <strong id="toastTitle">
+                Notification
+            </strong>
 
+            <p id="toastMessage">
+                Request completed.
+            </p>
 
-<!-- ========================================================
-     APPLICATION JAVASCRIPT
-========================================================= -->
+        </div>
 
-<script
-    src="/static/app.js"
-    defer
-></script>
+        <button
+            id="toastClose"
+            type="button"
+            aria-label="Close notification"
+        >
+            ×
+        </button>
+
+    </div>
 
 </body>
 </html>
