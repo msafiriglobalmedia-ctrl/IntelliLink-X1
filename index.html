@@ -6,10 +6,21 @@
   <meta name="theme-color" content="#0b1020">
   <meta name="description" content="IntelliLink X1 network performance dashboard prototype.">
   <title>IntelliLink X1 — Network Intelligence</title>
-  <link rel="stylesheet" href="static/style.css">
-  <script src="static/app.js" defer></script>
+  <link rel="stylesheet" href="/static/style.css?v=0.1.3">
+  <script>
+    // Same-origin API by default. For separate hosting, replace the empty string
+    // with the API origin only, e.g. https://your-api.example.com (no trailing slash).
+    window.INTELLILINK_API_BASE = window.INTELLILINK_API_BASE || '';
+  </script>
+  <script src="/static/app.js?v=0.1.3" defer></script>
 </head>
 <body>
+  <div class="splash-screen" id="splashScreen" aria-label="IntelliLink X1 loading" role="status">
+    <div class="splash-orbit orbit-one"></div><div class="splash-orbit orbit-two"></div>
+    <div class="splash-logo"><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M40 5 70 22v36L40 75 10 58V22Z"/><path d="m22 48 13-17 10 12 14-20"/><circle cx="22" cy="48" r="4"/><circle cx="35" cy="31" r="4"/><circle cx="45" cy="43" r="4"/><circle cx="59" cy="23" r="4"/></svg></div>
+    <div class="splash-name">IntelliLink <span>X1</span></div><p class="splash-tagline">future thinks before you do</p><p class="splash-kicker">ADAPTIVE NETWORK INTELLIGENCE</p><div class="splash-loader"><span></span></div>
+    <small>CONNECTING YOUR WORKSPACE</small>
+  </div>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <a class="brand" href="#dashboard" aria-label="IntelliLink X1 home">
@@ -22,16 +33,16 @@
         <a class="nav-link" href="#monitor" data-view="monitor"><span class="nav-icon">⌁</span><span>Live monitor</span><span class="nav-live-dot"></span></a>
         <a class="nav-link" href="#diagnostics" data-view="diagnostics"><span class="nav-icon">⌕</span><span>Diagnostics</span></a>
         <a class="nav-link" href="#history" data-view="history"><span class="nav-icon">◷</span><span>Test history</span></a>
-        <a class="nav-link" href="#settings" data-view="settings"><span class="nav-icon">⚙</span><span>Settings</span></a>
+        <a class="nav-link" href="#settingsPanel" data-view="settings"><span class="nav-icon">▤</span><span>SIM connection</span></a>
       </nav>
       <div class="sidebar-bottom">
         <div class="device-mini">
           <div class="device-mini-top"><span class="device-dot"></span><span>DEVICE STATUS</span><span class="device-online">ONLINE</span></div>
           <strong>IntelliLink Node 01</strong>
           <div class="device-meter"><span></span></div>
-          <div class="device-mini-foot"><span>CPU <b>24%</b></span><span>TEMP <b>29°C</b></span></div>
+          <div class="device-mini-foot"><span>CPU <b>N/A</b></span><span>TEMP <b>N/A</b></span></div>
         </div>
-        <div class="sidebar-footer"><span class="status-dot"></span> Prototype mode <span class="version">v0.1.1</span></div>
+        <div class="sidebar-footer"><span class="status-dot"></span> Visitor probe <span class="version">v0.1.3</span></div>
       </div>
     </aside>
 
@@ -40,7 +51,8 @@
         <button class="icon-button mobile-menu" id="menuToggle" aria-label="Toggle navigation">☰</button>
         <div class="breadcrumb"><span>Workspace</span><b>/</b><strong id="pageTitle">Overview</strong></div>
         <div class="topbar-actions">
-          <div class="live-pill"><span class="status-dot"></span> SYSTEM OPERATIONAL</div>
+          <div class="live-pill"><span class="status-dot"></span> CONNECTING TO API</div>
+          <button class="icon-button sound-toggle" id="soundToggle" type="button" aria-label="Turn notification sounds off" title="Notification sound on">🔊</button>
           <button class="icon-button" id="themeToggle" aria-label="Toggle light and dark theme" title="Toggle theme">◐</button>
           <div class="avatar" title="Msafiri Group">MG</div>
         </div>
@@ -49,37 +61,53 @@
       <div class="content-wrap">
         <section class="welcome-row">
           <div><div class="eyebrow"><span class="eyebrow-line"></span> NETWORK CONTROL CENTER</div><h1>Network <span>Overview</span></h1><p class="subheading">A clearer picture of your connection performance.</p></div>
-          <div class="welcome-actions"><span class="last-updated">Updated <strong id="lastUpdated">just now</strong></span><button class="button button-secondary" id="refreshBtn"><span class="refresh-symbol">↻</span> Refresh</button><button class="button button-primary" id="runTestBtn"><span>▶</span> Run diagnostics</button></div>
+          <div class="welcome-actions"><span class="last-updated">Updated <strong id="lastUpdated">just now</strong></span><button class="button button-secondary" id="refreshBtn"><span class="refresh-symbol">↻</span> Refresh</button><button class="button button-primary" id="runTestBtn" type="button"><span>▶</span> Run speed test</button><button class="button button-secondary" id="runDiagnosticsBtn" type="button">Run diagnostics</button></div>
         </section>
 
-        <div class="demo-banner"><span class="demo-banner-icon">ⓘ</span><div><strong>Prototype telemetry</strong><span>Displayed readings are demo data until a live API, device sensor, or network probe is connected.</span></div><button id="dismissBanner" aria-label="Dismiss notice">×</button></div>
+        <div class="demo-banner"><span class="demo-banner-icon">ⓘ</span><div><strong>Node telemetry vs. your connection</strong><span>Overview metrics come from the probe connected to the backend. Run Speed Test to measure this browser-to-API route and request supported probe metrics; unavailable measurements stay N/A.</span></div><button id="dismissBanner" aria-label="Dismiss notice">×</button></div>
+
+        <!-- SIM profile is intentionally near the top for easy discovery on mobile. -->
+        <section class="panel sim-panel" id="settingsPanel" aria-labelledby="simHeading">
+        <div class="panel-header"><div><div class="eyebrow">DEVICE CONNECTION</div><h2 id="simHeading">SIM & mobile network profile</h2></div><span class="sim-badge">DEVICE LINK</span></div>
+        <p class="sim-intro">Save a local label for the SIM you want to monitor. A phone number alone cannot grant access to modem readings or connect IntelliLink to the SIM.</p>
+        <form id="simProfileForm" class="sim-form">
+          <label for="simCarrier">Mobile operator</label>
+          <select id="simCarrier" name="carrier"><option value="">Choose operator</option><option>Yas</option><option>Vodacom</option><option>Airtel</option><option>Halotel</option><option>TTCL</option><option>Other</option></select>
+          <label for="simPhone">SIM phone number (optional)</label>
+          <input id="simPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+255 XXX XXX XXX" maxlength="18" aria-describedby="simPrivacy simMessage">
+          <div class="sim-privacy" id="simPrivacy">Privacy: saved only in this browser on this device; it is not sent to the API. You can leave the number blank.</div>
+          <button class="button button-primary" type="submit">Save SIM profile</button>
+          <p id="simMessage" class="sim-message" role="status" aria-live="polite">No SIM profile saved.</p>
+        </form>
+        <div class="sim-notice"><strong>For genuine live monitoring</strong><span>IntelliLink needs a device-side probe/app with Android permissions or a compatible modem/ESP32 telemetry bridge. The web dashboard and a phone number cannot read RSRP, RSRQ, radio band, or SIM status by themselves.</span></div>
+                </section>
 
         <section class="metric-grid" aria-label="Key network metrics">
-          <article class="metric-card"><div class="metric-heading"><span>NETWORK HEALTH</span><span class="metric-icon icon-blue">⌁</span></div><div class="metric-main"><strong id="healthScore">87</strong><span class="metric-unit">/ 100</span><span class="trend trend-good">↑ 4.2%</span></div><div class="metric-bottom"><div class="progress-track"><span id="healthBar" style="width:87%"></span></div><span class="metric-caption">Excellent connection quality</span></div></article>
-          <article class="metric-card"><div class="metric-heading"><span>LATENCY</span><span class="metric-icon icon-purple">◷</span></div><div class="metric-main"><strong id="latencyValue">42</strong><span class="metric-unit">ms</span><span class="trend trend-good">↓ 8 ms</span></div><div class="sparkline spark-blue" aria-hidden="true"><i style="height:55%"></i><i style="height:70%"></i><i style="height:44%"></i><i style="height:63%"></i><i style="height:34%"></i><i style="height:49%"></i><i style="height:25%"></i><i style="height:39%"></i><i style="height:19%"></i><i style="height:29%"></i><i style="height:14%"></i><i style="height:22%"></i></div><span class="metric-caption">Lower is better</span></article>
-          <article class="metric-card"><div class="metric-heading"><span>DOWNLOAD SPEED</span><span class="metric-icon icon-cyan">⇣</span></div><div class="metric-main"><strong id="downloadValue">38.6</strong><span class="metric-unit">Mbps</span><span class="trend trend-good">↑ 12.5%</span></div><div class="sparkline spark-cyan" aria-hidden="true"><i style="height:22%"></i><i style="height:31%"></i><i style="height:28%"></i><i style="height:47%"></i><i style="height:39%"></i><i style="height:57%"></i><i style="height:50%"></i><i style="height:67%"></i><i style="height:59%"></i><i style="height:74%"></i><i style="height:66%"></i><i style="height:88%"></i></div><span class="metric-caption">Estimated throughput</span></article>
-          <article class="metric-card"><div class="metric-heading"><span>PACKET LOSS</span><span class="metric-icon icon-orange">⌁</span></div><div class="metric-main"><strong id="lossValue">0.2</strong><span class="metric-unit">%</span><span class="trend trend-good">↓ 0.4%</span></div><div class="loss-visual"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><span class="metric-caption">Target: under 1%</span></article>
+          <article class="metric-card"><div class="metric-heading"><span>NETWORK HEALTH</span><span class="metric-icon icon-blue">⌁</span></div><div class="metric-main"><strong id="healthScore">—</strong><span class="metric-unit">/ 100</span><span class="trend">No baseline</span></div><div class="metric-bottom"><div class="progress-track"><span id="healthBar" style="width:0%"></span></div><span class="metric-caption">Waiting for API measurements</span></div></article>
+          <article class="metric-card"><div class="metric-heading"><span>LATENCY</span><span class="metric-icon icon-purple">◷</span></div><div class="metric-main"><strong id="latencyValue">—</strong><span class="metric-unit">ms</span><span class="trend">No baseline</span></div><div class="sparkline spark-blue" aria-hidden="true"><i style="height:55%"></i><i style="height:70%"></i><i style="height:44%"></i><i style="height:63%"></i><i style="height:34%"></i><i style="height:49%"></i><i style="height:25%"></i><i style="height:39%"></i><i style="height:19%"></i><i style="height:29%"></i><i style="height:14%"></i><i style="height:22%"></i></div><span class="metric-caption">Lower is better</span></article>
+          <article class="metric-card"><div class="metric-heading"><span>DOWNLOAD SPEED</span><span class="metric-icon icon-cyan">⇣</span></div><div class="metric-main"><strong id="downloadValue">—</strong><span class="metric-unit">Mbps</span><span class="trend">No baseline</span></div><div class="sparkline spark-cyan" aria-hidden="true"><i style="height:22%"></i><i style="height:31%"></i><i style="height:28%"></i><i style="height:47%"></i><i style="height:39%"></i><i style="height:57%"></i><i style="height:50%"></i><i style="height:67%"></i><i style="height:59%"></i><i style="height:74%"></i><i style="height:66%"></i><i style="height:88%"></i></div><span class="metric-caption">Estimated throughput</span></article>
+          <article class="metric-card"><div class="metric-heading"><span>PACKET LOSS</span><span class="metric-icon icon-orange">⌁</span></div><div class="metric-main"><strong id="lossValue">—</strong><span class="metric-unit">%</span><span class="trend">No baseline</span></div><div class="loss-visual"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><span class="metric-caption">Target: under 1%</span></article>
         </section>
 
         <section class="primary-grid">
           <article class="panel network-panel" id="monitor">
             <div class="panel-header"><div><div class="eyebrow">CONNECTION STATUS</div><h2>Available networks</h2></div><button class="text-button" id="viewAllNetworks">View details <span>→</span></button></div>
             <div class="network-list" id="networkList">
-              <div class="network-row selected" data-network="4G LTE"><div class="network-symbol signal-4g"><span>4G</span></div><div class="network-info"><strong>4G LTE <span class="recommended-tag">BEST MATCH</span></strong><small>Cellular · Mobile network</small></div><div class="network-quality"><strong>87 <small>/100</small></strong><span class="quality-label quality-good">Excellent</span></div><div class="network-bars" aria-label="Strong signal"><i></i><i></i><i></i><i></i><i></i></div><span class="selected-check">✓</span></div>
-              <div class="network-row" data-network="Wi-Fi"><div class="network-symbol signal-wifi">⌁</div><div class="network-info"><strong>Wi-Fi</strong><small>Wireless local network</small></div><div class="network-quality"><strong>79 <small>/100</small></strong><span class="quality-label quality-good">Good</span></div><div class="network-bars"><i></i><i></i><i></i><i></i><i class="off"></i></div><span class="selected-check">✓</span></div>
+              <div class="network-row" data-network="4G LTE"><div class="network-symbol signal-4g"><span>4G</span></div><div class="network-info"><strong>4G LTE</strong><small>Cellular · Mobile network</small></div><div class="network-quality"><strong>— <small>/100</small></strong><span class="quality-label quality-muted">No live reading</span></div><div class="network-bars" aria-label="Signal unavailable"><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i></div><span class="selected-check">✓</span></div>
+              <div class="network-row" data-network="Wi-Fi"><div class="network-symbol signal-wifi">⌁</div><div class="network-info"><strong>Wi-Fi</strong><small>Wireless local network</small></div><div class="network-quality"><strong>— <small>/100</small></strong><span class="quality-label quality-muted">No live reading</span></div><div class="network-bars"><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i></div><span class="selected-check">✓</span></div>
               <div class="network-row" data-network="5G"><div class="network-symbol signal-5g"><span>5G</span></div><div class="network-info"><strong>5G NR</strong><small>Next-generation cellular</small></div><div class="network-quality"><strong>— <small>/100</small></strong><span class="quality-label quality-muted">Not detected</span></div><div class="network-bars"><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i></div><span class="selected-check">✓</span></div>
               <div class="network-row" data-network="Satellite"><div class="network-symbol signal-sat">✳</div><div class="network-info"><strong>Satellite</strong><small>Satellite broadband</small></div><div class="network-quality"><strong>— <small>/100</small></strong><span class="quality-label quality-muted">No sensor</span></div><div class="network-bars"><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i></div><span class="selected-check">✓</span></div>
               <div class="network-row" data-network="WAN"><div class="network-symbol signal-wan">↔</div><div class="network-info"><strong>Ethernet / WAN</strong><small>Wired network</small></div><div class="network-quality"><strong>— <small>/100</small></strong><span class="quality-label quality-muted">Not connected</span></div><div class="network-bars"><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i></div><span class="selected-check">✓</span></div>
             </div>
-            <div class="panel-footnote"><span class="status-dot"></span> Auto-selection suggestion: <strong id="suggestionText">4G LTE</strong><span class="footnote-right">Based on demo score</span></div>
+<div class="panel-footnote"><span class="status-dot"></span> Auto-selection suggestion: <strong id="suggestionText">4G LTE</strong><span class="footnote-right">Based on demo score</span></div>
           </article>
 
           <article class="panel score-panel">
             <div class="panel-header"><div><div class="eyebrow">INTELLILINK RATING</div><h2>Connection score</h2></div><button class="more-button" aria-label="More score information" title="Score combines latency, packet loss, jitter, speed and signal">···</button></div>
-            <div class="score-gauge" role="img" aria-label="Connection score 87 out of 100"><svg viewBox="0 0 220 150" aria-hidden="true"><defs><linearGradient id="gaugeGradient" x1="0" x2="1"><stop offset="0%" stop-color="#438cff"/><stop offset="100%" stop-color="#39d5cb"/></linearGradient></defs><path class="gauge-track" d="M 25 125 A 85 85 0 0 1 195 125" pathLength="100"/><path id="gaugeProgress" class="gauge-progress" d="M 25 125 A 85 85 0 0 1 195 125" pathLength="100" stroke-dasharray="87 100"/></svg><div class="gauge-value"><strong id="gaugeScore">87</strong><span>OUT OF 100</span></div></div>
-            <div class="score-status"><span class="status-pulse"></span><strong id="scoreLabel">Excellent</strong><span>network quality</span></div>
-            <div class="score-breakdown"><div><span>Stability</span><div class="mini-track"><span style="width:92%"></span></div><b id="stabilityValue">92%</b></div><div><span>Responsiveness</span><div class="mini-track purple-track"><span style="width:85%"></span></div><b id="responsivenessValue">85%</b></div><div><span>Throughput</span><div class="mini-track cyan-track"><span style="width:81%"></span></div><b id="throughputValue">81%</b></div></div>
-            <div class="score-info"><span>ⓘ</span> Score is illustrative until live measurements are available.</div>
+            <div class="score-gauge" role="img" aria-label="Connection score unavailable"><svg viewBox="0 0 220 150" aria-hidden="true"><defs><linearGradient id="gaugeGradient" x1="0" x2="1"><stop offset="0%" stop-color="#438cff"/><stop offset="100%" stop-color="#39d5cb"/></linearGradient></defs><path class="gauge-track" d="M 25 125 A 85 85 0 0 1 195 125" pathLength="100"/><path id="gaugeProgress" class="gauge-progress" d="M 25 125 A 85 85 0 0 1 195 125" pathLength="100" stroke-dasharray="0 100"/></svg><div class="gauge-value"><strong id="gaugeScore">—</strong><span>OUT OF 100</span></div></div>
+            <div class="score-status"><span class="status-pulse"></span><strong id="scoreLabel">Waiting for data</strong><span>network quality</span></div>
+            <div class="score-breakdown"><div><span>Stability</span><div class="mini-track"><span style="width:0%"></span></div><b id="stabilityValue">—</b></div><div><span>Responsiveness</span><div class="mini-track purple-track"><span style="width:0%"></span></div><b id="responsivenessValue">—</b></div><div><span>Throughput</span><div class="mini-track cyan-track"><span style="width:0%"></span></div><b id="throughputValue">—</b></div></div>
+            <div class="score-info"><span>ⓘ</span> Only values returned by the API will be displayed.</div>
           </article>
         </section>
 
@@ -87,19 +115,34 @@
           <article class="panel performance-panel" id="diagnostics">
             <div class="panel-header"><div><div class="eyebrow">PERFORMANCE ANALYTICS</div><h2>Connection performance</h2></div><div class="select-wrap"><select id="chartRange" aria-label="Performance chart time range"><option value="1h">Last hour</option><option value="24h">Last 24 hours</option><option value="7d">Last 7 days</option></select></div></div>
             <div class="chart-legend"><span><i class="legend-dot dot-latency"></i> Latency (ms)</span><span><i class="legend-dot dot-speed"></i> Download (Mbps)</span></div>
-            <div class="chart-area"><div class="chart-y-axis"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div><div class="chart-plot"><div class="chart-gridlines"><i></i><i></i><i></i><i></i><i></i></div><svg class="line-chart" viewBox="0 0 600 190" preserveAspectRatio="none" role="img" aria-label="Illustrative latency and download performance chart"><defs><linearGradient id="speedFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#40d7cc" stop-opacity=".19"/><stop offset="100%" stop-color="#40d7cc" stop-opacity="0"/></linearGradient></defs><path id="speedArea" d="M0 119 L50 106 L100 111 L150 79 L200 86 L250 60 L300 76 L350 48 L400 55 L450 30 L500 43 L550 19 L600 35 L600 190 L0 190 Z" fill="url(#speedFill)"/><path id="speedLine" d="M0 119 L50 106 L100 111 L150 79 L200 86 L250 60 L300 76 L350 48 L400 55 L450 30 L500 43 L550 19 L600 35" fill="none" stroke="#40d7cc" stroke-width="2.5" vector-effect="non-scaling-stroke"/><path id="latencyLine" d="M0 129 L50 142 L100 120 L150 132 L200 117 L250 126 L300 108 L350 119 L400 99 L450 112 L500 91 L550 101 L600 88" fill="none" stroke="#638dff" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg><div class="chart-x-axis" id="chartLabels"><span>09:00</span><span>09:05</span><span>09:10</span><span>09:15</span><span>09:20</span><span>09:25</span><span>09:30</span></div></div></div>
-            <div class="chart-disclaimer">Illustrative trend line · not historical telemetry</div>
+            <div class="chart-area"><div class="chart-y-axis"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div><div class="chart-plot"><div class="chart-gridlines"><i></i><i></i><i></i><i></i><i></i></div><svg class="line-chart" viewBox="0 0 600 190" preserveAspectRatio="none" role="img" aria-label="Illustrative latency and download performance chart"><defs><linearGradient id="speedFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#40d7cc" stop-opacity=".19"/><stop offset="100%" stop-color="#40d7cc" stop-opacity="0"/></linearGradient></defs><path id="speedArea" d="" fill="url(#speedFill)"/><path id="speedLine" d="" fill="none" stroke="#40d7cc" stroke-width="2.5" vector-effect="non-scaling-stroke"/><path id="latencyLine" d="" fill="none" stroke="#638dff" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg><div class="chart-x-axis" id="chartLabels"><span>09:00</span><span>09:05</span><span>09:10</span><span>09:15</span><span>09:20</span><span>09:25</span><span>09:30</span></div></div></div>
+            <div class="chart-disclaimer">Waiting for stored historical measurements.</div>
           </article>
           <article class="panel events-panel" id="history">
             <div class="panel-header"><div><div class="eyebrow">ACTIVITY LOG</div><h2>Recent events</h2></div><button class="text-button" id="clearEvents">Clear <span>×</span></button></div>
-            <div class="event-list" id="eventList"><div class="event-item"><span class="event-icon event-success">✓</span><div class="event-copy"><strong>Connection test completed</strong><small>4G LTE · Demo result received</small></div><time>09:30</time></div><div class="event-item"><span class="event-icon event-info">⌁</span><div class="event-copy"><strong>Network recommendation updated</strong><small>4G LTE currently ranks highest</small></div><time>09:28</time></div><div class="event-item"><span class="event-icon event-warn">!</span><div class="event-copy"><strong>5G source unavailable</strong><small>No compatible live telemetry source</small></div><time>09:22</time></div><div class="event-item"><span class="event-icon event-info">◷</span><div class="event-copy"><strong>Monitoring session started</strong><small>IntelliLink X1 prototype</small></div><time>09:00</time></div></div>
+            <div class="event-list" id="eventList"><div class="empty-events">Loading event history…</div></div>
           </article>
         </section>
 
-        <footer class="page-footer"><div><span class="footer-brand-mark">IL</span><strong>IntelliLink X1</strong><span>·</span><span>Adaptive network management</span></div><div><span class="footer-live-dot"></span> Prototype ready <span class="footer-separator">|</span> Built by <strong>MSAFIRI GROUP</strong></div></footer>
+        <section class="panel browser-monitor-panel" aria-labelledby="browserMonitorHeading">
+          <div class="panel-header"><div><div class="eyebrow">VISITOR CONNECTION PROBE</div><h2 id="browserMonitorHeading">This browser’s network</h2></div><span class="sim-badge" id="browserProbeBadge">CHECKING</span></div>
+          <p class="sim-intro">Each visitor gets a separate test from their own browser to the IntelliLink API. Results are local to this page and are not a shared reading of every visitor’s SIM signal.</p>
+          <div class="browser-probe-grid">
+            <article><small>API round-trip average</small><strong id="browserRtt">—</strong><span id="browserRttDetail">milliseconds · 5 probes</span></article>
+            <article><small>Browser status</small><strong id="browserOnline">Checking…</strong><span id="browserOnlineDetail">Waiting for probe</span></article>
+            <article><small>Connection type</small><strong id="browserType">Not exposed</strong><span id="browserNetworkHint">Browser support varies</span></article>
+            <article><small>Estimated downlink</small><strong id="browserDownlink">—</strong><span>Mbps · if exposed by browser</span></article>
+          </div>
+          <div class="browser-probe-actions"><button class="button button-primary" id="testBrowserConnection" type="button">Test this connection</button><span id="browserProbeUpdated" role="status" aria-live="polite">No test run yet.</span></div>
+          <div class="sim-notice"><strong>What this can and cannot measure</strong><span>This browser runs five small API requests and estimates average round-trip time and variation. A website link cannot directly read a visitor’s SIM number, operator, 4G/5G radio signal, RSRP/RSRQ, or reliably measure full download/upload speed. Those need a permissioned Android companion app or a dedicated device/probe.</span></div>
+        </section>
+
+
+
+        <footer class="page-footer"><div><span class="footer-brand-mark">IL</span><strong>IntelliLink X1</strong><span>·</span><span>Adaptive network management</span></div><div><span class="footer-live-dot"></span> Pre-deploy v0.1.3 <span class="footer-separator">|</span> Built by <strong>MSAFIRI GROUP</strong></div></footer>
       </div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
-      <div class="test-overlay" id="testOverlay" hidden><div class="test-dialog"><div class="test-orbit"><span>⌁</span></div><div class="eyebrow">DIAGNOSTIC SEQUENCE</div><h2 id="testTitle">Checking connection</h2><p id="testDescription">Preparing demo diagnostic sequence…</p><div class="test-progress"><span id="testProgressBar"></span></div><div class="test-progress-meta"><span id="testStep">Initialising</span><strong id="testPercent">0%</strong></div><button class="button button-secondary" id="cancelTest">Cancel test</button></div></div>
+      <div class="test-overlay" id="testOverlay" hidden><div class="test-dialog"><div class="test-orbit"><span>⌁</span></div><div class="eyebrow">DIAGNOSTIC SEQUENCE</div><h2 id="testTitle">Checking connection</h2><p id="testDescription">Contacting the connected API…</p><div class="test-progress"><span id="testProgressBar"></span></div><div class="test-progress-meta"><span id="testStep">Initialising</span><strong id="testPercent">0%</strong></div><button class="button button-secondary" id="cancelTest">Cancel test</button></div></div>
     </main>
   </div>
 </body>
