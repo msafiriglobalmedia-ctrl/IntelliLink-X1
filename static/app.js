@@ -1,326 +1,113 @@
-'use strict';
+:root{--bg:#090f1f;--panel:#111a2d;--panel2:#15223a;--border:rgba(173,190,220,.22);--text:#edf3ff;--muted:#8e9db9;--blue:#4388ff;--cyan:#42d1c8;--green:#4ad4a5;--purple:#a98aff;--orange:#ffb35e;--red:#ff657b}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1.55}button,input,select{font:inherit}button,a,select,input{outline-offset:3px}button{cursor:pointer}.app-shell{display:flex;min-height:100vh}.sidebar{width:250px;flex:0 0 250px;background:#0d1527;border-right:1px solid var(--border);padding:25px 17px;display:flex;flex-direction:column;gap:25px}.brand{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none;padding:4px}.brand-mark{width:43px;height:43px}.brand-mark svg,.splash-logo svg{width:100%;height:100%;fill:none;stroke:var(--blue);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.brand-copy strong{display:block;font-size:17px;letter-spacing:-.4px}.brand-copy em{color:var(--blue);font-style:normal}.brand-copy small{font-size:9px;color:var(--muted);letter-spacing:1.8px}.workspace-label,.eyebrow{font-size:11px;letter-spacing:2px;font-weight:800;color:var(--muted)}.workspace-label{padding:0 11px}.nav-menu{display:grid;gap:7px}.nav-link{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;text-decoration:none;color:var(--muted);font-weight:650}.nav-link.active,.nav-link:hover{color:var(--text);background:#1a2a47}.nav-link.active{box-shadow:inset 3px 0 var(--blue)}.nav-icon{width:22px;text-align:center;font-size:18px}.nav-live-dot,.status-dot,.footer-live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}.nav-live-dot{margin-left:auto}.sidebar-bottom{margin-top:auto}.device-mini{border:1px solid var(--border);background:var(--panel);padding:14px;border-radius:14px}.device-mini-top,.device-mini-foot{display:flex;align-items:center;justify-content:space-between;gap:7px;font-size:10px;color:var(--muted)}.device-online{color:var(--green)}.device-mini>strong{display:block;margin:13px 0}.device-meter,.progress-track,.splash-loader{height:5px;background:#293750;border-radius:9px;overflow:hidden}.device-meter span{display:block;width:25%;height:100%;background:var(--blue)}.device-mini-foot{margin-top:12px}.sidebar-footer{margin-top:18px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px}.version{margin-left:auto}.main-content{min-width:0;flex:1}.topbar{height:80px;padding:0 30px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:15px}.breadcrumb,.topbar-actions{display:flex;align-items:center;gap:15px}.breadcrumb{color:var(--muted)}.breadcrumb strong{color:var(--text)}.topbar-actions{gap:12px}.live-pill{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:30px;padding:8px 12px;font-size:10px;font-weight:800;letter-spacing:1px;color:var(--green)}.live-pill.offline{color:var(--red)}.icon-button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:12px;width:42px;height:42px}.avatar{background:#25405c;border:1px solid #456780;border-radius:12px;padding:10px;font-weight:800}.mobile-menu{display:none}.content-wrap{max-width:1400px;margin:auto;padding:30px}.welcome-row{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:24px}.eyebrow{display:flex;align-items:center;gap:10px}.eyebrow-line{height:3px;width:26px;background:var(--blue);border-radius:3px}h1{font-size:clamp(29px,4vw,43px);letter-spacing:-1.8px;line-height:1.15;margin:15px 0 10px}h1 span{color:var(--blue)}h2{font-size:21px;letter-spacing:-.5px;margin:5px 0 0}.subheading{color:var(--muted);margin:0}.welcome-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:10px}.last-updated{width:100%;text-align:right;font-size:12px;color:var(--muted)}.last-updated strong{color:var(--text)}.button{border:1px solid var(--border);border-radius:12px;padding:12px 17px;min-height:44px;font-weight:750;color:var(--text);background:var(--panel)}.button-primary{background:linear-gradient(120deg,#347df5,#3868df);border-color:#4d86fa}.button-secondary:hover,.icon-button:hover{border-color:var(--blue)}.refresh-symbol{font-size:19px;margin-right:7px}.demo-banner{display:flex;align-items:flex-start;gap:14px;padding:17px 19px;border:1px solid #557ab3;border-radius:15px;background:#13203a;margin-bottom:25px;color:#d9e7ff}.demo-banner-icon{font-size:21px;color:#7eb9ff}.demo-banner div{display:grid;gap:3px;flex:1}.demo-banner span{font-size:13px;color:#9fb0cd}.demo-banner strong{font-size:14px}.demo-banner button{border:0;background:transparent;color:var(--muted);font-size:23px}.metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:20px}.metric-card,.panel{min-width:0;background:var(--panel);border:1px solid var(--border);border-radius:21px;padding:24px}.metric-heading,.metric-main,.panel-header{display:flex;align-items:center}.metric-heading{justify-content:space-between;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:1.6px}.metric-icon{display:grid;place-items:center;width:43px;height:43px;border-radius:14px;font-size:21px}.icon-blue{background:#18345a;color:#86b8ff}.icon-purple{background:#30234e;color:var(--purple)}.icon-cyan{background:#103d40;color:var(--cyan)}.icon-orange{background:#483321;color:var(--orange)}.metric-main{gap:8px;margin:15px 0 17px;flex-wrap:wrap}.metric-main>strong{font-size:clamp(36px,5vw,56px);line-height:1;letter-spacing:-2px}.metric-unit,.trend{color:var(--muted)}.trend{margin-left:auto;font-size:12px}.metric-bottom{display:grid;gap:10px}.progress-track span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width .5s}.metric-caption{font-size:12px;color:var(--muted)}.sparkline{display:flex;align-items:end;gap:6px;height:36px;margin:4px 0 10px}.sparkline i{display:block;flex:1;border-radius:4px 4px 0 0;background:var(--blue)}.spark-cyan i{background:var(--cyan)}.loss-visual{display:flex;gap:5px;margin:18px 0}.loss-visual span{height:10px;flex:1;border-radius:3px;background:#293750}.primary-grid,.secondary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-bottom:20px}.panel-header{justify-content:space-between;gap:12px;margin-bottom:23px}.text-button,.more-button{border:0;background:transparent;color:var(--muted);font-weight:700}.text-button span{margin-left:8px}.network-list{display:grid;gap:7px}.network-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;padding:13px 10px;border:1px solid transparent;border-bottom-color:var(--border);border-radius:12px;cursor:pointer}.network-row.selected{background:#1a2a47;border-color:#284a78}.network-symbol{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#1b2d49;font-weight:850;color:#85b9ff}.signal-5g{color:var(--purple);background:#30234e}.signal-sat{color:var(--orange);background:#493322}.signal-wan{color:var(--cyan);background:#153a3c}.network-info strong,.network-info small,.network-quality strong,.network-quality span{display:block}.network-info small,.quality-label{font-size:11px;color:var(--muted)}.network-quality{text-align:right}.network-quality strong{font-size:14px}.network-quality small{font-weight:400;color:var(--muted)}.network-bars,.selected-check{display:none}.panel-footnote{border-top:1px solid var(--border);margin-top:17px;padding-top:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.panel-footnote strong{color:var(--text)}.footnote-right{width:100%;padding-left:18px}.score-gauge{width:min(100%,330px);margin:0 auto;display:block}.gauge-number{font-size:43px;font-weight:800;fill:var(--text)}.gauge-caption{fill:var(--muted);font-size:10px;letter-spacing:1.5px}.score-label{text-align:center;color:var(--muted);margin:5px 0 22px}.score-bars{display:grid;gap:14px}.score-bar-row{display:grid;grid-template-columns:105px minmax(40px,1fr) 42px;align-items:center;gap:10px;font-size:12px;color:var(--muted)}.score-bar-row .progress-track{height:7px}.score-bar-row strong{text-align:right;color:var(--text)}.chart-wrap{overflow:hidden}.chart-svg{width:100%;height:auto;display:block}.chart-disclaimer{font-size:12px;color:var(--muted);margin-top:12px}.chart-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);gap:5px}.event-list{display:grid}.event-item{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}.event-icon{width:37px;height:37px;border-radius:12px;display:grid;place-items:center;background:#183b37;color:var(--green);font-weight:800}.event-copy{min-width:0;flex:1}.event-copy strong,.event-copy small{display:block}.event-copy strong{font-size:13px}.event-copy small{font-size:11px;color:var(--muted);overflow-wrap:anywhere}.event-item time{font-size:10px;color:var(--muted)}.empty-events{color:var(--muted);padding:20px 0}.sim-panel{margin-bottom:22px}.sim-badge{font-size:10px;letter-spacing:1px;color:var(--cyan);background:#123a3a;border-radius:20px;padding:7px 10px;white-space:nowrap}.sim-intro{max-width:780px;color:var(--muted);font-size:13px}.sim-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px 15px;max-width:760px;margin-top:20px}.sim-form label{font-size:12px;color:var(--muted);font-weight:700}.sim-form input,.sim-form select{width:100%;min-width:0;min-height:48px;background:#0c1426;border:1px solid var(--border);border-radius:11px;color:var(--text);padding:10px 13px;font-size:16px}.sim-form button,.sim-message,.sim-privacy{grid-column:1/-1}.sim-form button{justify-self:start;margin-top:5px}.sim-privacy,.sim-message{font-size:12px;color:var(--muted);margin:0}.sim-notice{display:grid;gap:4px;border-left:3px solid var(--blue);background:#14223a;padding:13px 15px;margin-top:20px;border-radius:0 10px 10px 0;font-size:12px}.sim-notice span{color:var(--muted)}.page-footer{border-top:1px solid var(--border);padding:24px 4px 8px;display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;color:var(--muted);font-size:12px}.page-footer>div{display:flex;align-items:center;gap:9px}.page-footer strong{color:var(--text)}.footer-brand-mark{border:1px solid var(--border);border-radius:8px;padding:5px 7px;color:#9bc3ff}.footer-live-dot{background:var(--green)}.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#eaf1ff;color:#101a2c;border-radius:12px;padding:12px 17px;max-width:calc(100% - 30px);z-index:10000;font-size:13px;box-shadow:0 8px 35px #0005;transition:.25s}.toast.show{opacity:1;transform:translate(-50%,0)}.test-overlay{position:fixed;inset:0;background:#050a16eF;display:grid;place-items:center;padding:20px;z-index:5000}.test-overlay[hidden]{display:none}.test-dialog{width:min(100%,420px);background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:30px;text-align:center}.test-orbit{margin:0 auto 22px;width:68px;height:68px;border:2px solid #335b96;border-radius:50%;display:grid;place-items:center;color:var(--cyan);font-size:35px;animation:orbit-pulse 1.8s ease-in-out infinite}.test-progress{height:7px;background:#293750;border-radius:9px;overflow:hidden;margin:22px 0 9px}.test-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width .25s}.test-progress-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:20px}.splash-screen{position:fixed;inset:0;z-index:20000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 50% 43%,#182c50 0,#0b1224 45%,#060a14 100%);transition:opacity .65s ease,visibility .65s ease}.splash-hidden{opacity:0;visibility:hidden;pointer-events:none}.splash-logo{width:92px;height:92px;position:relative;z-index:1;animation:logo-enter 1.1s cubic-bezier(.2,.8,.2,1) both,logo-float 3s 1.1s ease-in-out infinite;filter:drop-shadow(0 0 20px #4388ff55)}.splash-logo svg{stroke-width:2}.splash-name{font-size:30px;font-weight:850;letter-spacing:-1px;margin-top:20px;animation:fade-up .7s .25s both}.splash-name span{color:var(--blue)}.splash-screen p{font-size:10px;letter-spacing:3px;color:#9aaccb;margin:8px 0 30px;animation:fade-up .7s .4s both}.splash-loader{width:150px;height:3px;background:#263653;animation:fade-up .7s .5s both}.splash-loader span{display:block;width:35%;height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));animation:loader-sweep 1.3s ease-in-out infinite}.splash-screen>small{font-size:9px;letter-spacing:2px;color:#7184a6;margin-top:15px;animation:fade-up .7s .6s both}.splash-orbit{position:absolute;width:270px;height:270px;border:1px solid #4776b426;border-radius:50%;animation:orbit-rotate 12s linear infinite}.orbit-one:before,.orbit-two:before{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:var(--cyan);top:30px;left:35px;box-shadow:0 0 18px var(--cyan)}.orbit-two{width:350px;height:350px;border-style:dashed;animation-direction:reverse;animation-duration:25s}.orbit-two:before{background:var(--blue);top:auto;left:auto;right:30px;bottom:80px;box-shadow:0 0 18px var(--blue)}@keyframes logo-enter{from{opacity:0;transform:scale(.55) rotate(-20deg)}to{opacity:1;transform:scale(1) rotate(0)}}@keyframes logo-float{0%,100%{translate:0 0}50%{translate:0 -7px}}@keyframes fade-up{from{opacity:0;translate:0 10px}to{opacity:1;translate:0 0}}@keyframes loader-sweep{0%{transform:translateX(-110%)}100%{transform:translateX(400%)}}@keyframes orbit-rotate{to{transform:rotate(360deg)}}@keyframes orbit-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 #4388ff00}50%{transform:scale(1.05);box-shadow:0 0 25px #4388ff22}}body.light-theme{--bg:#eef3fb;--panel:#fff;--panel2:#f5f8ff;--border:rgba(57,76,112,.2);--text:#17243b;--muted:#64738d}body.light-theme .sidebar{background:#f6f8fd}body.light-theme .demo-banner,body.light-theme .sim-notice{background:#edf4ff;color:#1d3558}body.light-theme .sim-form input,body.light-theme .sim-form select{background:#f7f9fd;color:#17243b}@media(min-width:1100px){.metric-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.primary-grid{grid-template-columns:1.05fr .95fr}}@media(max-width:900px){.sidebar{width:220px;flex-basis:220px}.content-wrap{padding:23px}.welcome-row{align-items:flex-start;flex-direction:column}.welcome-actions{justify-content:flex-start}.last-updated{text-align:left}.primary-grid,.secondary-grid{grid-template-columns:1fr}.topbar{padding:0 22px}}@media(max-width:640px){.sidebar{position:fixed;z-index:4000;inset:0 auto 0 0;transform:translateX(-105%);transition:transform .25s;box-shadow:20px 0 40px #0005}.sidebar.open{transform:translateX(0)}.mobile-menu{display:block;flex-shrink:0}.topbar{height:68px;padding:0 14px}.breadcrumb{gap:8px;font-size:12px}.topbar-actions{gap:7px}.live-pill{font-size:0;padding:10px}.live-pill .status-dot{width:9px;height:9px}.avatar{padding:8px;font-size:12px}.content-wrap{padding:22px 14px}.metric-grid{grid-template-columns:1fr;gap:13px}.metric-card,.panel{padding:19px;border-radius:18px}.welcome-actions{width:100%;justify-content:stretch}.welcome-actions .button{flex:1;padding:11px 9px;font-size:12px}.network-row{grid-template-columns:39px minmax(0,1fr) auto;gap:9px;padding:12px 7px}.network-symbol{width:37px;height:37px}.network-info strong{font-size:13px}.network-info small{font-size:10px}.network-quality strong{font-size:13px}.sim-form{grid-template-columns:1fr}.sim-form label{margin-top:5px}.sim-form button{width:100%}.page-footer{font-size:11px}.page-footer>div{flex-wrap:wrap}.splash-logo{width:80px;height:80px}.splash-name{font-size:27px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
-(() => {
-  const $ = (selector, root = document) => root.querySelector(selector);
-  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+/* IntelliLink X1 identity and per-visitor probe */
+.splash-tagline{font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;font-size:clamp(14px,3.6vw,17px)!important;font-weight:500;letter-spacing:.045em!important;text-transform:none;color:#dbe8ff!important;margin:6px 0 10px!important;text-align:center;animation:fade-up .8s .34s both;text-shadow:0 0 22px #4b8dff30}.splash-kicker{margin:0 0 26px!important;font-size:9px!important;letter-spacing:2.5px!important}.browser-monitor-panel{margin:0 0 22px}.browser-probe-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0}.browser-probe-grid article{min-width:0;padding:15px;border:1px solid var(--border);background:var(--panel2);border-radius:13px;display:grid;align-content:start;gap:6px}.browser-probe-grid small,.browser-probe-grid span{font-size:11px;color:var(--muted)}.browser-probe-grid strong{font-size:20px;line-height:1.25;overflow-wrap:anywhere}.browser-probe-actions{display:flex;align-items:center;gap:13px;flex-wrap:wrap}.browser-probe-actions>span{font-size:12px;color:var(--muted);overflow-wrap:anywhere}.browser-probe-actions button:disabled{opacity:.7;cursor:progress}.sim-notice{overflow-wrap:anywhere}@media(max-width:640px){.browser-probe-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.browser-probe-grid article{padding:13px}.browser-probe-grid strong{font-size:18px}}
 
-  // Same-origin by default. For a separately hosted API, define
-  // window.INTELLILINK_API_BASE before this script (for example, https://api.example.com).
-  const API_ROOT = String(window.INTELLILINK_API_BASE || '').replace(/\/$/, '');
-  const API = `${API_ROOT}/api/v1`;
 
-  const state = {
-    running: false,
-    selectedNetwork: null,
-    toastTimer: null,
-    lastSnapshot: null,
-    lastScore: null,
-    history: [],
-    chartRange: '1h',
-    requestController: null,
-    cancelRequested: false,
-    visitorProbeRunning: false,
-  };
-
-  const missing = value => value === null || value === undefined || value === '';
-
-  function firstValue(...values) {
-    for (const value of values) {
-      if (!missing(value) && !(typeof value === 'number' && !Number.isFinite(value))) {
-        return value;
-      }
-    }
-    return null;
-  }
-
-  function objectValue(value, keys = []) {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
-
-    for (const key of keys) {
-      if (value[key] && typeof value[key] === 'object' && !Array.isArray(value[key])) {
-        return value[key];
-      }
-    }
-
-    return value;
-  }
-
-  function arrayValue(value) {
-    if (Array.isArray(value)) return value;
-    if (!value || typeof value !== 'object') return [];
-
-    for (const key of ['items', 'events', 'history', 'samples', 'records', 'results', 'data']) {
-      if (Array.isArray(value[key])) return value[key];
-    }
-
-    return [];
-  }
-
-  function display(value, fallback = 'N/A') {
-    return missing(value) ? fallback : String(value);
-  }
-
-  function numeric(value) {
-    if (missing(value) || !Number.isFinite(Number(value))) return null;
-    return Number(value);
-  }
-
-  function formattedNumber(value, digits = 1, fallback = '—') {
-    const number = numeric(value);
-    return number === null ? fallback : number.toFixed(digits);
-  }
-
-  function showToast(message) {
-    const toast = $('#toast');
-    if (!toast) return;
-
-    toast.textContent = message;
-    toast.classList.add('show');
-
-    clearTimeout(state.toastTimer);
-
-    state.toastTimer = setTimeout(() => {
-      toast.classList.remove('show');
-    }, 3600);
-  }
-
-  function setText(selector, value, fallback = 'N/A') {
-    const node = $(selector);
-    if (node) node.textContent = display(value, fallback);
-  }
-
-  function setUpdated(timestamp = null) {
-    const target = $('#lastUpdated');
-    if (!target) return;
-
-    const date = timestamp ? new Date(timestamp) : new Date();
-
-    target.textContent = Number.isNaN(date.getTime())
-      ? 'not available'
-      : date.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-  }
-
-  async function api(path, timeoutMs = 12000, externalSignal = null) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-    const forwardAbort = () => controller.abort();
-
-    if (externalSignal) {
-      if (externalSignal.aborted) {
-        controller.abort();
-      } else {
-        externalSignal.addEventListener('abort', forwardAbort, { once: true });
-      }
-    }
-
-    try {
-      const response = await fetch(path, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json'
-        },
-        cache: 'no-store',
-        signal: controller.signal
-      });
-
-      const type = response.headers.get('content-type') || '';
-      const payload = type.includes('application/json')
-        ? await response.json()
-        : await response.text();
-
-      if (!response.ok) {
-        const detail = payload && typeof payload === 'object'
-          ? firstValue(payload.detail, payload.message, payload.error)
-          : payload;
-
-        throw new Error(detail || `Request failed (${response.status})`);
-      }
-
-      return payload;
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        throw new Error('API request timed out. Check the backend and network connection.');
-      }
-
-      throw error;
-    } finally {
-      clearTimeout(timeout);
-
-      if (externalSignal) {
-        externalSignal.removeEventListener('abort', forwardAbort);
-      }
-    }
-  }
-
-  function scoreColor(score) {
-    if (score >= 85) return 'var(--green)';
-    if (score >= 70) return 'var(--cyan)';
-    if (score >= 50) return 'var(--orange)';
-    return 'var(--red)';
-  }
-
-  function setSystemStatus(online, label) {
-    const pill = $('.live-pill');
-    if (!pill) return;
-
-    pill.classList.toggle('offline', !online);
-
-    const dot = document.createElement('span');
-    dot.className = 'status-dot';
-    dot.style.background = online ? 'var(--green)' : 'var(--red)';
-
-    const labelNode = document.createElement('span');
-    labelNode.dataset.systemLabel = 'true';
-    labelNode.textContent = label;
-
-    // Remove the hard-coded status text from the HTML.
-    pill.replaceChildren(
-      dot,
-      document.createTextNode(' '),
-      labelNode
-    );
-  }
-
-  function normaliseNetworkType(value) {
-    const type = String(value || '').trim().toLowerCase();
-
-    if (!type) return null;
-    if (type.includes('5g')) return '5G';
-    if (type.includes('4g') || type.includes('lte')) return '4G LTE';
-
-    // Generic mobile/cellular does not prove whether the radio is 4G or 5G.
-    if (type.includes('cellular') || type.includes('mobile')) return null;
-
-    if (
-      type.includes('wi-fi') ||
-      type.includes('wifi') ||
-      type.includes('wlan')
-    ) {
-      return 'Wi-Fi';
-    }
-
-    if (type.includes('satellite')) return 'Satellite';
-
-    if (
-      type.includes('ethernet') ||
-      type.includes('wan') ||
-      type.includes('wired')
-    ) {
-      return 'WAN';
-    }
-
-    return null;
-  }
-
-  function valueFrom(data, keys) {
-    for (const key of keys) {
-      const value = data && data[key];
-      if (!missing(value)) return value;
-    }
-
-    return null;
-  }
-
-  function currentMetrics() {
-    const s = state.lastSnapshot || {};
-    const scoreData = state.lastScore || {};
-    const latest = state.dashboard?.latest_network || {};
-
-    return {
-      network: normaliseNetworkType(
-        firstValue(
-          s.connection_type,
-          s.network_type,
-          s.network,
-          latest.network_type,
-          latest.network
-        )
-      ),
-
-      score: firstValue(
-        valueFrom(s, ['score', 'network_score', 'health_score']),
-        valueFrom(scoreData, ['score', 'network_score', 'health_score']),
-        valueFrom(latest, ['score', 'network_score', 'health_score'])
-      ),
-
-      quality: firstValue(
-        valueFrom(s, ['quality', 'score_label', 'network_quality']),
-        valueFrom(scoreData, ['quality', 'label', 'score_label']),
-        valueFrom(latest, ['quality', 'label'])
-      ),
-
-      latency: firstValue(
-        valueFrom(s, ['latency_ms', 'latency', 'ping_ms']),
-        valueFrom(scoreData, ['latency_ms', 'latency']),
-        valueFrom(latest, ['latency_ms', 'latency'])
-      ),
-
-      jitter: firstValue(
-        valueFrom(s, ['jitter_ms', 'jitter']),
-        valueFrom(scoreData, ['jitter_ms', 'jitter'])
-      ),
-
-      loss: firstValue(
-        valueFrom(s, ['packet_loss_percent', 'packet_loss', 'loss_percent']),
-        valueFrom(scoreData, ['packet_loss_percent', 'packet_loss', 'loss_percent']),
-        valueFrom(latest, ['packet_loss_percent', 'packet_loss'])
-      ),
-
-      download: firstValue(
-        valueFrom(s, ['download_mbps', 'download_speed_mbps', 'download']),
-        valueFrom(scoreData, ['download_mbps', 'download_speed_mbps']),
-        valueFrom(latest, ['download_mbps', 'download_speed_mbps'])
-      ),
-
-      upload: firstValue(
-        valueFrom(s, ['upload_mbps', 'upload_speed_mbps', 'upload']),
-        valueFrom(scoreData, ['upload_mbps', 'upload_speed_mbps'])
-      ),
-
-      stability: firstValue(
-        valueFrom(s, ['stability', 'stability_score', 'stability_percent']),
-        valueFrom(scoreData, ['stability', 'stability_score', 'stability_percent'])
-      ),
-
-      responsiveness: firstValue(
-        valueFrom(s, ['responsiveness', 'responsiveness_score', 'responsiveness_percent']),
-        valueFrom(scoreData, ['responsiveness', 'responsiveness_score', 'responsiveness_percent'])
-      ),
-
-      throughput: firstValue(
-        valueFrom(s, ['throughput', 'throughput_score', 'throughput_percent']),
-        valueFrom(scoreData, ['throughput', 'throughput_score', 'throughput_percent'])
-      ),
-
-      signal: firstValue(
-        valueFrom(s, ['signal_strength', 'signal_percent', 'signal_dbm', 'signal']),
-        valueFrom(s.wifi || {}, ['signal_strength', 'signal_percent', 'rssi'])
-      ),
-
-      timestamp: firstValue(
-        s.timestamp,
-        s.updated_at,
-        latest.created_at,
-        latest.timestamp
-      ),
-
-      internet: firstValue(
-        s.internet,
-        s.internet_reachable,
-        s.internet_status
-      ),
-
-      suggestion: firstValue(
-        s.intelligence?.action,
-        s.intelligence?.priority,
-        scoreData.suggestion,
-        scoreData.recommendation
-      )
-    };
-  }
+/* v0.1.3 visual consistency fixes: class names used by the current index.html */
+.device-dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:var(--green);box-shadow:0 0 10px #4ad4a577}
+.device-mini-top{display:flex;align-items:center;gap:7px}
+.device-mini-top>span:nth-child(2){flex:1}
+.metric-card{overflow:hidden}
+.metric-card .metric-caption{display:block;margin-top:10px}
+.metric-main .trend{white-space:nowrap}
+.network-info{min-width:0;overflow-wrap:anywhere}
+.network-info small{display:block;color:var(--muted);font-size:12px}
+.network-quality{min-width:74px}
+.quality-label{display:block;margin-top:5px;font-size:11px;line-height:1.35}
+.quality-good{color:var(--green)}
+.quality-muted{color:var(--muted)}
+.network-row.selected .selected-check{display:block;color:var(--blue);font-weight:900}
+.network-row.selected{grid-template-columns:44px minmax(0,1fr) auto 13px}
+.network-bars{display:none}
+.score-gauge{position:relative;width:min(100%,360px);height:auto;aspect-ratio:220/150;margin:4px auto 0}
+.score-gauge>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.gauge-track,.gauge-progress{fill:none;stroke-width:13;stroke-linecap:round}
+.gauge-track{stroke:#2b3850}
+.gauge-progress{stroke:url(#gaugeGradient);transition:stroke-dasharray .5s ease}
+.gauge-value{position:absolute;left:0;right:0;bottom:2%;display:flex;flex-direction:column;align-items:center;gap:3px}
+.gauge-value strong{font-size:clamp(30px,4vw,48px);font-weight:800;letter-spacing:-1.5px;line-height:1}
+.gauge-value span{font-size:10px;letter-spacing:1.6px;color:var(--muted)}
+.score-status{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;margin:10px 0 22px;color:var(--muted);font-size:13px}
+.score-status strong{color:var(--green);font-size:14px}
+.status-pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px #4ad4a555}
+.score-breakdown{display:grid;gap:14px}
+.score-breakdown>div{display:grid;grid-template-columns:115px minmax(40px,1fr) 38px;align-items:center;gap:10px;color:var(--muted);font-size:12px}
+.score-breakdown b{font-size:12px;text-align:right;color:var(--text)}
+.mini-track{height:7px;border-radius:10px;background:#283650;overflow:hidden}
+.mini-track span{display:block;height:100%;width:0;border-radius:10px;background:var(--blue);transition:width .4s}
+.purple-track span{background:var(--purple)}
+.cyan-track span{background:var(--cyan)}
+.score-info{display:flex;align-items:flex-start;gap:8px;color:var(--muted);font-size:11px;margin-top:20px;line-height:1.5}
+.score-info>span{color:#83b9ff}
+.chart-legend{display:flex;flex-wrap:wrap;gap:18px;color:var(--muted);font-size:12px;margin:0 0 18px}
+.chart-legend>span{display:flex;align-items:center;gap:7px}
+.legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.dot-latency{background:#638dff}.dot-speed{background:#40d7cc}
+.chart-area{display:grid;grid-template-columns:29px minmax(0,1fr);gap:9px;min-width:0}
+.chart-y-axis{display:flex;flex-direction:column;justify-content:space-between;padding:3px 0 19px;font-size:10px;color:var(--muted);text-align:right}
+.chart-plot{position:relative;min-width:0;min-height:185px;padding-bottom:24px}
+.chart-gridlines{position:absolute;inset:0 0 24px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.chart-gridlines i{border-top:1px dashed #58677f66;width:100%}
+.line-chart{position:absolute;inset:0 0 24px;width:100%;height:calc(100% - 24px);overflow:visible}
+.chart-x-axis{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;gap:3px;color:var(--muted);font-size:10px;white-space:nowrap}
+.chart-x-axis span{min-width:0}
+.chart-disclaimer{line-height:1.5;overflow-wrap:anywhere}
+.splash-screen{isolation:isolate}
+.splash-logo{will-change:transform,opacity}
+.splash-tagline{font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;font-weight:550;letter-spacing:.04em!important;font-size:clamp(14px,3.6vw,18px)!important;color:#dbe8ff!important;text-transform:none!important;text-align:center;text-shadow:0 0 20px #4388ff40}
+.splash-orbit{pointer-events:none}
+.sound-toggle{font-size:17px;display:grid;place-items:center}
+.sound-toggle:focus-visible,.button:focus-visible,.icon-button:focus-visible{outline:2px solid var(--cyan)}
+#runTestBtn{min-width:150px}
+#runDiagnosticsBtn{white-space:nowrap}
+#settingsPanel{scroll-margin-top:20px}
+#simPhone::placeholder{color:#7586a3;opacity:1}
+.sim-panel{border-color:#3b5f91;box-shadow:inset 0 1px 0 #6c9bdf12}
+.sim-form label{display:block}
+.sim-form input:focus,.sim-form select:focus{border-color:var(--blue)}
+.splash-screen p.splash-tagline{margin:6px 0 9px!important;letter-spacing:.04em!important;font-size:clamp(14px,3.6vw,18px)!important}
+@media(max-width:1100px){
+  .app-shell{display:block}
+  .sidebar{position:fixed;z-index:9000;inset:0 auto 0 0;width:min(82vw,285px);max-width:285px;flex-basis:auto;overflow-y:auto;transform:translateX(-105%);transition:transform .25s ease;box-shadow:20px 0 40px #0005}
+  .sidebar.open{transform:translateX(0)}
+  .main-content{width:100%;min-width:0}
+  .mobile-menu{display:block;flex-shrink:0}
+  .primary-grid,.secondary-grid{grid-template-columns:minmax(0,1fr)}
+  .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .topbar{padding:0 16px}
+  .content-wrap{padding:22px clamp(14px,3vw,28px)}
+  .sidebar-footer{padding-bottom:20px}
+}
+@media(max-width:640px){
+  .metric-grid{grid-template-columns:1fr}
+  .metric-card,.panel{padding:18px}
+  .welcome-actions{display:flex;flex-wrap:wrap;justify-content:stretch;gap:8px}
+  .welcome-actions .last-updated{flex-basis:100%}
+  .welcome-actions .button{flex:1 1 calc(50% - 8px);min-width:0;white-space:normal}
+  #runTestBtn,#runDiagnosticsBtn{min-width:0}
+  .topbar-actions{gap:5px}
+  .breadcrumb span:first-child,.breadcrumb b{display:none}
+  .browser-probe-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .network-row{grid-template-columns:38px minmax(0,1fr) auto;gap:8px}
+  .network-row.selected{grid-template-columns:38px minmax(0,1fr) auto}
+  .network-row.selected .selected-check{display:none}
+  .network-quality{min-width:66px}
+  .network-info small{font-size:10px}
+  .score-breakdown>div{grid-template-columns:95px minmax(30px,1fr) 35px;gap:8px}
+  .gauge-value strong{font-size:38px}
+  .sim-form{grid-template-columns:1fr}
+  .sim-form label{margin-top:4px}
+  .sim-form button{width:100%}
+  .panel-header{align-items:flex-start}
+  .panel-header h2{font-size:19px}
+  .chart-area{grid-template-columns:25px minmax(0,1fr);gap:6px}
+  .chart-plot{min-height:165px}
+}
+@media(prefers-reduced-motion:reduce){.splash-logo,.splash-orbit,.splash-loader span,.test-orbit{animation:none!important}}
+  // ==========================================
+  // UPDATE MINI METRICS
+  // ==========================================
 
   function updateMiniMetric(selector, value) {
     const node = $(selector);
@@ -328,178 +115,163 @@
 
     const number = numeric(value);
 
-    node.textContent = number === null
-      ? '—'
-      : `${Math.max(0, Math.min(100, number))}%`;
-
-    const track = node.parentElement?.querySelector('.mini-track span');
-
-    if (track) {
-      track.style.width = number === null
-        ? '0%'
-        : `${Math.max(0, Math.min(100, number))}%`;
+    if (number === null) {
+      node.textContent = '—';
+      return;
     }
+
+    node.textContent = String(number);
   }
 
+  // ==========================================
+  // NETWORK ROWS
+  // ==========================================
+
   function updateNetworkRows(metrics) {
-    $$('.network-row').forEach(row => {
-      const name = row.dataset.network;
-      const active = !!metrics.network && name === metrics.network;
+    const rows = $$('.network-row');
+
+    rows.forEach(row => {
+      const networkName = row.dataset.network;
+      const active = networkName === metrics.network;
 
       row.classList.toggle('selected', active);
       row.setAttribute('aria-pressed', String(active));
 
       const scoreNode = $('.network-quality strong', row);
-      const labelNode = $('.quality-label', row);
+      const qualityNode = $('.quality-label', row);
 
       if (scoreNode) {
+        const score = numeric(metrics.score);
+
         scoreNode.replaceChildren();
 
-        const number = active ? numeric(metrics.score) : null;
+        const scoreText = document.createElement('span');
+        scoreText.textContent = score === null
+          ? '—'
+          : String(Math.round(score));
 
-        scoreNode.append(
-          document.createTextNode(
-            number === null ? '— ' : `${Math.round(number)} `
-          )
-        );
+        const suffix = document.createElement('small');
+        suffix.textContent = ' /100';
 
-        const denominator = document.createElement('small');
-        denominator.textContent = '/100';
-        scoreNode.append(denominator);
+        scoreNode.append(scoreText, suffix);
       }
 
-      if (labelNode) {
-        labelNode.classList.remove('quality-good', 'quality-muted');
+      if (qualityNode) {
+        const score = numeric(metrics.score);
 
-        labelNode.classList.add(
-          active && !missing(metrics.score)
-            ? 'quality-good'
-            : 'quality-muted'
-        );
+        if (!active || score === null) {
+          qualityNode.textContent = active
+            ? 'Score unavailable'
+            : 'No live reading';
 
-        labelNode.textContent = active
-          ? (
-              metrics.quality ||
-              (
-                numeric(metrics.score) === null
-                  ? 'Connected · score unavailable'
-                  : 'Measured'
-              )
-            )
-          : 'No live reading';
-      }
+          qualityNode.classList.add('quality-muted');
+        } else {
+          qualityNode.textContent = display(
+            metrics.quality,
+            score >= 85
+              ? 'Excellent'
+              : score >= 70
+                ? 'Good'
+                : score >= 50
+                  ? 'Fair'
+                  : 'Poor'
+          );
 
-      const bars = $$('.network-bars i', row);
-      let signalLevel = 0;
-
-      if (active && !missing(metrics.signal)) {
-        const raw = String(metrics.signal);
-        const n = numeric(raw.replace(/[^0-9.+-]/g, ''));
-
-        if (n !== null) {
-          signalLevel =
-            raw.includes('dBm') || n < 0
-              ? (
-                  n >= -60 ? 5 :
-                  n >= -70 ? 4 :
-                  n >= -80 ? 3 :
-                  n >= -90 ? 2 : 1
-                )
-              : Math.max(0, Math.min(5, Math.round(n / 20)));
+          qualityNode.classList.remove('quality-muted');
         }
       }
 
+      const bars = $$('.network-bars i', row);
+
       bars.forEach((bar, index) => {
-        bar.classList.toggle('off', index >= signalLevel);
+        const score = numeric(metrics.score);
+        const activeBars = score === null
+          ? 0
+          : Math.round((score / 100) * bars.length);
+
+        bar.classList.toggle(
+          'off',
+          !active || index >= activeBars
+        );
       });
     });
-  }
-
-  function applySnapshot(rawSnapshot, rawScore = null) {
-    let snapshot = objectValue(
-      rawSnapshot,
-      ['snapshot', 'network_snapshot', 'result']
-    );
-
-    if (snapshot.data && typeof snapshot.data === 'object') {
-      snapshot = snapshot.data;
-    }
-
-    let score = rawScore
-      ? objectValue(rawScore, ['result', 'score_data'])
-      : {};
-
-    if (typeof rawScore === 'number') {
-      score = { score: rawScore };
-    }
-
-    if (
-      rawScore &&
-      typeof rawScore === 'object' &&
-      typeof rawScore.score === 'number'
-    ) {
-      score = rawScore;
-    }
-
-    state.lastSnapshot = snapshot;
-    state.lastScore = score;
-
-    const metrics = currentMetrics();
-    state.selectedNetwork = metrics.network || state.selectedNetwork;
-
-    const scoreValue = numeric(metrics.score);
 
     setText(
+      '#suggestionText',
+      metrics.network || 'No recommendation',
+      'No recommendation'
+    );
+  }
+
+  // ==========================================
+  // APPLY API SNAPSHOT
+  // ==========================================
+
+  function applySnapshot(rawSnapshot, rawScore = null) {
+    const snapshot = objectValue(
+      rawSnapshot,
+      ['snapshot', 'network', 'data', 'result']
+    );
+
+    state.lastSnapshot = snapshot;
+    state.lastScore = rawScore
+      ? objectValue(rawScore, ['score', 'data', 'result'])
+      : null;
+
+    const metrics = currentMetrics();
+
+    const score = numeric(metrics.score);
+    const latency = numeric(metrics.latency);
+    const jitter = numeric(metrics.jitter);
+    const loss = numeric(metrics.loss);
+    const download = numeric(metrics.download);
+
+    // Network health
+    setText(
       '#healthScore',
-      scoreValue === null ? '—' : Math.round(scoreValue),
-      '—'
+      score === null ? null : Math.round(score)
     );
 
     setText(
       '#gaugeScore',
-      scoreValue === null ? '—' : Math.round(scoreValue),
-      '—'
+      score === null ? null : Math.round(score)
     );
 
-    setText('#latencyValue', formattedNumber(metrics.latency, 1), '—');
-    setText('#downloadValue', formattedNumber(metrics.download, 2), '—');
-    setText('#lossValue', formattedNumber(metrics.loss, 2), '—');
+    const healthBar = $('#healthBar');
 
-    setText(
-      '#scoreLabel',
-      metrics.quality || (scoreValue === null ? 'Waiting for data' : 'Measured')
-    );
-
-    setText(
-      '#suggestionText',
-      metrics.suggestion ||
-      (metrics.network ? metrics.network : 'Waiting for a network reading')
-    );
-
-    updateMiniMetric('#stabilityValue', metrics.stability);
-    updateMiniMetric('#responsivenessValue', metrics.responsiveness);
-    updateMiniMetric('#throughputValue', metrics.throughput);
-
-    const bar = $('#healthBar');
-
-    if (bar) {
-      bar.style.width = `${
-        scoreValue === null
-          ? 0
-          : Math.max(0, Math.min(100, scoreValue))
-      }%`;
+    if (healthBar) {
+      healthBar.style.width = score === null
+        ? '0%'
+        : `${Math.max(0, Math.min(100, score))}%`;
     }
 
+    // Latency
+    setText(
+      '#latencyValue',
+      latency === null ? null : formattedNumber(latency, 1)
+    );
+
+    // Download speed
+    setText(
+      '#downloadValue',
+      download === null ? null : formattedNumber(download, 1)
+    );
+
+    // Packet loss
+    setText(
+      '#lossValue',
+      loss === null ? null : formattedNumber(loss, 2)
+    );
+
+    // Score gauge
     const gauge = $('#gaugeProgress');
 
     if (gauge) {
       gauge.setAttribute(
         'stroke-dasharray',
-        `${
-          scoreValue === null
-            ? 0
-            : Math.max(0, Math.min(100, scoreValue))
-        } 100`
+        score === null
+          ? '0 100'
+          : `${Math.max(0, Math.min(100, score))} 100`
       );
     }
 
@@ -508,101 +280,111 @@
     if (gaugeLabel) {
       gaugeLabel.setAttribute(
         'aria-label',
-        scoreValue === null
-          ? 'Connection score is not available'
-          : `Connection score ${Math.round(scoreValue)} out of 100`
+        score === null
+          ? 'Connection score unavailable'
+          : `Connection score ${Math.round(score)} out of 100`
       );
     }
 
-    const label = $('#scoreLabel');
+    const scoreLabel = $('#scoreLabel');
 
-    if (label) {
-      label.style.color = scoreValue === null
-        ? 'var(--text-muted, #98a3b8)'
-        : scoreColor(scoreValue);
+    if (scoreLabel) {
+      let label = display(metrics.quality, '');
+
+      if (!label && score !== null) {
+        label = score >= 85
+          ? 'Excellent'
+          : score >= 70
+            ? 'Good'
+            : score >= 50
+              ? 'Fair'
+              : 'Poor';
+      }
+
+      scoreLabel.textContent = label || 'Waiting for data';
+
+      if (score !== null) {
+        scoreLabel.style.color = scoreColor(score);
+      } else {
+        scoreLabel.style.removeProperty('color');
+      }
     }
 
-    // Do not present the old example trends as real measurements.
-    $$('.trend').forEach(node => {
-      node.textContent = 'No baseline';
-      node.classList.remove('trend-good');
+    // Stability, responsiveness and throughput
+    const stability = numeric(metrics.stability);
+    const responsiveness = numeric(metrics.responsiveness);
+    const throughput = numeric(metrics.throughput);
+
+    setText(
+      '#stabilityValue',
+      stability === null ? null : `${Math.round(stability)}%`
+    );
+
+    setText(
+      '#responsivenessValue',
+      responsiveness === null
+        ? null
+        : `${Math.round(responsiveness)}%`
+    );
+
+    setText(
+      '#throughputValue',
+      throughput === null ? null : `${Math.round(throughput)}%`
+    );
+
+    const breakdown = $$('.score-breakdown > div');
+
+    const values = [
+      stability,
+      responsiveness,
+      throughput
+    ];
+
+    breakdown.forEach((item, index) => {
+      const bar = $('.mini-track span', item);
+      const value = values[index];
+
+      if (bar) {
+        bar.style.width = value === null
+          ? '0%'
+          : `${Math.max(0, Math.min(100, value))}%`;
+      }
     });
 
-    $$('.sparkline').forEach(node => {
-      node.style.display = 'none';
-    });
+    // Jitter is available only when supplied by the API.
+    const jitterNode = $('#jitterValue');
 
-    const captions = $$('.metric-card .metric-caption');
-
-    if (captions[0]) {
-      captions[0].textContent = scoreValue === null
-        ? 'No score returned by the API'
-        : 'Calculated from available measurements';
-    }
-
-    if (captions[1]) {
-      captions[1].textContent = metrics.jitter == null
-        ? 'Live latency measurement'
-        : `Jitter: ${formattedNumber(metrics.jitter, 1)} ms`;
-    }
-
-    if (captions[2]) {
-      captions[2].textContent = metrics.download == null
-        ? 'Throughput not measured by this endpoint'
-        : 'Value returned by the API';
-    }
-
-    if (captions[3]) {
-      captions[3].textContent = metrics.loss == null
-        ? 'Packet loss is not available from this probe'
-        : 'Value returned by the API';
-    }
-
-    const scoreInfo = $('.score-info');
-
-    if (scoreInfo) {
-      scoreInfo.textContent =
-        'Only values returned by the API are shown; unavailable measurements remain blank.';
+    if (jitterNode) {
+      jitterNode.textContent = jitter === null
+        ? '—'
+        : `${jitter.toFixed(1)} ms`;
     }
 
     updateNetworkRows(metrics);
-    setUpdated(metrics.timestamp);
-
-    const hasInternet =
-      metrics.internet === true ||
-      metrics.internet === 1 ||
-      String(metrics.internet).toLowerCase() === 'true' ||
-      String(metrics.internet).toLowerCase() === 'connected';
-
-    setSystemStatus(
-      hasInternet,
-      hasInternet ? 'API REACHABLE' : 'LIMITED / NOT REACHABLE'
+    setUpdated(
+      firstValue(
+        snapshot.updated_at,
+        snapshot.timestamp,
+        snapshot.created_at
+      )
     );
 
-    const banner = $('.demo-banner');
-
-    if (banner) {
-      const copy = $('.demo-banner div span', banner);
-
-      if (copy) {
-        copy.textContent =
-          'API readings describe the machine/probe running this backend. They do not automatically represent this phone’s mobile-radio signal.';
-      }
-
-      const heading = $('.demo-banner div strong', banner);
-
-      if (heading) {
-        heading.textContent = 'Telemetry source note';
-      }
-    }
+    return metrics;
   }
+
+  // ==========================================
+  // ACTIVITY EVENT LOG
+  // ==========================================
 
   function addEvent(title, detail, kind = 'info', timestamp = null) {
     const list = $('#eventList');
     if (!list) return;
 
     const empty = $('.empty-events', list);
-    if (empty) empty.remove();
+
+    if (empty) {
+      empty.remove();
+    }
 
     const iconClass =
       kind === 'success'
@@ -629,14 +411,15 @@
     copy.className = 'event-copy';
 
     const heading = document.createElement('strong');
-    heading.textContent = display(title, 'System event');
+    heading.textContent = title;
 
     const caption = document.createElement('small');
-    caption.textContent = display(detail, '');
+    caption.textContent = detail;
 
     copy.append(heading, caption);
 
     const timeNode = document.createElement('time');
+
     const date = timestamp ? new Date(timestamp) : new Date();
 
     timeNode.textContent = Number.isNaN(date.getTime())
@@ -654,6 +437,10 @@
     }
   }
 
+  // ==========================================
+  // RENDER EVENT HISTORY
+  // ==========================================
+
   function renderEvents(raw) {
     const list = $('#eventList');
     if (!list) return;
@@ -664,97 +451,115 @@
     if (!events.length) {
       const empty = document.createElement('div');
       empty.className = 'empty-events';
-      empty.textContent = 'No saved events are available.';
+      empty.textContent = 'No saved events available.';
       list.append(empty);
       return;
     }
 
     events.slice(0, 6).forEach(event => {
+      const item = objectValue(event);
+
+      const title = firstValue(
+        item.event_type,
+        item.title,
+        item.type,
+        'System event'
+      );
+
+      const detail = firstValue(
+        item.message,
+        item.detail,
+        item.description,
+        ''
+      );
+
       const level = String(
-        firstValue(
-          event.event_level,
-          event.severity,
-          event.level,
-          ''
-        )
+        firstValue(item.event_level, item.severity, 'info')
       ).toLowerCase();
 
-      const kind =
-        level.includes('error') || level.includes('warn')
-          ? 'warn'
-          : level.includes('success') || level.includes('info')
-            ? 'success'
-            : 'info';
+      const kind = level.includes('error') || level.includes('warning')
+        ? 'warn'
+        : level.includes('success') || level.includes('info')
+          ? 'success'
+          : 'info';
 
       addEvent(
-        firstValue(event.event_type, event.title, event.type, 'System event'),
-        firstValue(event.message, event.description, event.detail, ''),
+        String(title).replaceAll('_', ' ').toUpperCase(),
+        String(detail),
         kind,
-        firstValue(event.created_at, event.timestamp, event.time)
+        firstValue(item.created_at, item.timestamp, item.time)
       );
     });
   }
 
+  // ==========================================
+  // EXTRACT HISTORY
+  // ==========================================
+
   function extractHistory(raw) {
-    const rows = arrayValue(raw).map(item => ({
-      timestamp: firstValue(
-        item.timestamp,
-        item.created_at,
-        item.recorded_at,
-        item.created
-      ),
+    const items = arrayValue(raw);
 
-      latency: firstValue(
-        item.latency_ms,
-        item.latency,
-        item.ping_ms
-      ),
+    return items.map(item => {
+      const row = objectValue(item);
 
-      download: firstValue(
-        item.download_mbps,
-        item.download_speed_mbps,
-        item.download
-      )
-    })).filter(item =>
-      numeric(item.latency) !== null ||
-      numeric(item.download) !== null
-    );
-
-    const now = Date.now();
-
-    const windows = {
-      '1h': 3600000,
-      '24h': 86400000,
-      '7d': 7 * 86400000
-    };
-
-    const windowMs = windows[state.chartRange] || windows['1h'];
-
-    return rows.filter(item => {
-      if (!item.timestamp) return true;
-
-      const time = new Date(item.timestamp).getTime();
-
-      return !Number.isFinite(time) || time >= now - windowMs;
-    }).sort((a, b) =>
-      new Date(a.timestamp || 0) - new Date(b.timestamp || 0)
+      return {
+        timestamp: firstValue(
+          row.timestamp,
+          row.created_at,
+          row.recorded_at
+        ),
+        latency: numeric(firstValue(
+          row.latency_ms,
+          row.latency,
+          row.ping_ms
+        )),
+        download: numeric(firstValue(
+          row.download_mbps,
+          row.download_speed_mbps,
+          row.download
+        )),
+        upload: numeric(firstValue(
+          row.upload_mbps,
+          row.upload_speed_mbps,
+          row.upload
+        )),
+        network: firstValue(
+          row.network_type,
+          row.network,
+          row.connection_type
+        )
+      };
+    }).filter(row =>
+      row.latency !== null || row.download !== null
     );
   }
+
+  // ==========================================
+  // RENDER PERFORMANCE CHART
+  // ==========================================
 
   function renderChart(rows) {
     const speedLine = $('#speedLine');
     const speedArea = $('#speedArea');
     const latencyLine = $('#latencyLine');
     const labels = $('#chartLabels');
-    const disclaimer = $('.chart-disclaimer');
 
-    if (!speedLine || !speedArea || !latencyLine || !labels) return;
+    if (!speedLine || !speedArea || !latencyLine) return;
 
-    if (!rows.length) {
+    const validRows = Array.isArray(rows)
+      ? rows.slice(-12)
+      : [];
+
+    if (!validRows.length) {
       speedLine.setAttribute('d', '');
       speedArea.setAttribute('d', '');
       latencyLine.setAttribute('d', '');
-      labels.replaceChildren();
+
+      if (labels) {
+        labels.replaceChildren();
+      }
+
+      const disclaimer = $('.chart-disclaimer');
 
       if (disclaimer) {
         disclaimer.textContent =
@@ -766,266 +571,448 @@
 
     const width = 600;
     const height = 190;
+    const maxValue = Math.max(
+      100,
+      ...validRows.map(row => Math.max(
+        row.latency || 0,
+        row.download || 0
+      ))
+    );
 
-    const latencyValues = rows
-      .map(row => numeric(row.latency))
-      .filter(value => value !== null);
+    const pointsFor = key => validRows
+      .map((row, index) => {
+        const value = row[key];
 
-    const speedValues = rows
-      .map(row => numeric(row.download))
-      .filter(value => value !== null);
+        if (value === null) return null;
 
-    const maxLatency = Math.max(1, ...latencyValues);
-    const maxSpeed = Math.max(1, ...speedValues);
-
-    const pointPath = (key, max) => {
-      const values = rows.map(row => numeric(row[key]));
-
-      const valid = values
-        .map((value, i) => ({ value, i }))
-        .filter(point => point.value !== null);
-
-      if (!valid.length) return '';
-
-      return valid.map((point, index) => {
-        const x = valid.length === 1
+        const x = validRows.length === 1
           ? width / 2
-          : (point.i / Math.max(1, rows.length - 1)) * width;
+          : index * width / (validRows.length - 1);
 
-        const y = height - 8 - (point.value / max) * (height - 20);
+        const y = height - (value / maxValue) * height;
 
-        return `${index ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
-      }).join(' ');
-    };
+        return `${x.toFixed(2)},${y.toFixed(2)}`;
+      })
+      .filter(Boolean);
 
-    const speedPath = pointPath('download', maxSpeed);
-    const latencyPath = pointPath('latency', maxLatency);
+    const speedPoints = pointsFor('download');
+    const latencyPoints = pointsFor('latency');
 
-    speedLine.setAttribute('d', speedPath);
-    latencyLine.setAttribute('d', latencyPath);
+    speedLine.setAttribute(
+      'd',
+      speedPoints.length
+        ? `M ${speedPoints.join(' L ')}`
+        : ''
+    );
 
     speedArea.setAttribute(
       'd',
-      speedPath ? `${speedPath} L600 190 L0 190 Z` : ''
+      speedPoints.length
+        ? `M ${speedPoints[0]} L ${speedPoints.slice(1).join(' L ')} L ${width},${height} L 0,${height} Z`
+        : ''
     );
 
-    labels.replaceChildren();
+    latencyLine.setAttribute(
+      'd',
+      latencyPoints.length
+        ? `M ${latencyPoints.join(' L ')}`
+        : ''
+    );
 
-    const numberOfLabels = Math.min(7, rows.length);
-    const picked = [];
+    if (labels) {
+      labels.replaceChildren();
 
-    for (let i = 0; i < numberOfLabels; i++) {
-      const index = numberOfLabels === 1
-        ? rows.length - 1
-        : Math.round(i * (rows.length - 1) / (numberOfLabels - 1));
+      validRows.forEach(row => {
+        const span = document.createElement('span');
 
-      const row = rows[index];
-      const span = document.createElement('span');
-      const date = row.timestamp ? new Date(row.timestamp) : null;
+        const date = row.timestamp
+          ? new Date(row.timestamp)
+          : null;
 
-      span.textContent =
-        date && !Number.isNaN(date.getTime())
-          ? (
-              state.chartRange === '7d'
-                ? date.toLocaleDateString([], { weekday: 'short' })
-                : date.toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })
-            )
-          : `${index + 1}`;
+        span.textContent = date && !Number.isNaN(date.getTime())
+          ? date.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          : '—';
 
-      picked.push(span);
+        labels.append(span);
+      });
     }
 
-    labels.replaceChildren(...picked);
+    const disclaimer = $('.chart-disclaimer');
 
     if (disclaimer) {
       disclaimer.textContent =
-        `Stored API measurements · ${rows.length} record(s) in this range.`;
+        'Chart displays saved API measurements; missing metrics are omitted.';
+    }
+  // ==========================================
+  // LOAD DASHBOARD FROM API
+  // ==========================================
+
+  async function loadDashboard() {
+    try {
+      const result = await apiRequest('/api/v1/dashboard');
+
+      if (!result.ok) {
+        throw new Error(
+          result.message || 'Dashboard could not be loaded.'
+        );
+      }
+
+      const data = objectValue(
+        result.data,
+        ['dashboard', 'data', 'result']
+      );
+
+      const snapshot = firstValue(
+        data.latest_network,
+        data.network,
+        data.snapshot,
+        {}
+      );
+
+      const speedTest = firstValue(
+        data.latest_speed_test,
+        data.speed_test,
+        {}
+      );
+
+      const diagnostic = firstValue(
+        data.latest_diagnostic,
+        data.diagnostic,
+        {}
+      );
+
+      state.dashboard = data;
+
+      applySnapshot(snapshot);
+
+      const speed = objectValue(speedTest);
+
+      const download = numeric(firstValue(
+        speed.download_mbps,
+        speed.download_speed_mbps,
+        speed.download
+      ));
+
+      const upload = numeric(firstValue(
+        speed.upload_mbps,
+        speed.upload_speed_mbps,
+        speed.upload
+      ));
+
+      setText(
+        '#downloadValue',
+        download === null ? null : formattedNumber(download, 1)
+      );
+
+      setText(
+        '#uploadValue',
+        upload === null ? null : formattedNumber(upload, 1)
+      );
+
+      if (Object.keys(objectValue(diagnostic)).length) {
+        state.latestDiagnostic = diagnostic;
+      }
+
+      setText('#apiStatus', 'API REACHABLE');
+
+      $('#apiStatus')?.classList.add('online');
+      $('#apiStatus')?.classList.remove('offline');
+
+      return data;
+    } catch (error) {
+      console.error('[IntelliLink] Dashboard error:', error);
+
+      setText('#apiStatus', 'API UNAVAILABLE');
+
+      $('#apiStatus')?.classList.remove('online');
+      $('#apiStatus')?.classList.add('offline');
+
+      showToast(
+        'Dashboard API haipatikani. Angalia muunganisho wa backend.'
+      );
+
+      return null;
     }
   }
 
-  async function loadHistory() {
-    try {
-      const raw = await api(`${API}/network/history`, 12000);
+  // ==========================================
+  // LOAD NETWORK SNAPSHOT
+  // ==========================================
 
-      state.history = extractHistory(raw);
-      renderChart(state.history);
+  async function loadNetworkSnapshot() {
+    try {
+      const result = await apiRequest('/api/v1/network/snapshot');
+
+      if (!result.ok) {
+        throw new Error(
+          result.message || 'Network snapshot unavailable.'
+        );
+      }
+
+      const snapshot = objectValue(
+        result.data,
+        ['snapshot', 'network', 'data', 'result']
+      );
+
+      applySnapshot(snapshot);
+
+      return snapshot;
     } catch (error) {
-      state.history = [];
+      console.error('[IntelliLink] Snapshot error:', error);
+      return null;
+    }
+  }
+
+  // ==========================================
+  // LOAD CONNECTION SCORE
+  // ==========================================
+
+  async function loadConnectionScore() {
+    try {
+      const result = await apiRequest('/api/v1/network/score');
+
+      if (!result.ok) {
+        throw new Error(
+          result.message || 'Connection score unavailable.'
+        );
+      }
+
+      const data = objectValue(
+        result.data,
+        ['score', 'data', 'result']
+      );
+
+      state.lastScore = data;
+
+      const score = numeric(firstValue(
+        data.score,
+        data.network_score,
+        data.health_score
+      ));
+
+      if (score !== null) {
+        setText('#healthScore', Math.round(score));
+        setText('#gaugeScore', Math.round(score));
+
+        const bar = $('#healthBar');
+
+        if (bar) {
+          bar.style.width =
+            `${Math.max(0, Math.min(100, score))}%`;
+        }
+
+        const gauge = $('#gaugeProgress');
+
+        if (gauge) {
+          gauge.setAttribute(
+            'stroke-dasharray',
+            `${Math.max(0, Math.min(100, score))} 100`
+          );
+        }
+
+        setText(
+          '#scoreLabel',
+          firstValue(
+            data.quality,
+            data.label,
+            score >= 85
+              ? 'Excellent'
+              : score >= 70
+                ? 'Good'
+                : score >= 50
+                  ? 'Fair'
+                  : 'Poor'
+          )
+        );
+      }
+
+      return data;
+    } catch (error) {
+      console.error('[IntelliLink] Score error:', error);
+      return null;
+    }
+  }
+
+  // ==========================================
+  // LOAD NETWORK HISTORY
+  // ==========================================
+
+  async function loadNetworkHistory(range = '1h') {
+    try {
+      const result = await apiRequest(
+        `/api/v1/network/history?range=${encodeURIComponent(range)}`
+      );
+
+      if (!result.ok) {
+        throw new Error(
+          result.message || 'Network history unavailable.'
+        );
+      }
+
+      const rows = extractHistory(result.data);
+
+      state.networkHistory = rows;
+
+      renderChart(rows);
+
+      return rows;
+    } catch (error) {
+      console.error('[IntelliLink] History error:', error);
+
       renderChart([]);
 
-      console.warn('Network history unavailable:', error.message);
+      return [];
     }
   }
+
+  // ==========================================
+  // LOAD ACTIVITY EVENTS
+  // ==========================================
 
   async function loadEvents() {
     try {
-      const raw = await api(`${API}/events`, 10000);
-      renderEvents(raw);
-    } catch (error) {
-      const list = $('#eventList');
+      const result = await apiRequest('/api/v1/events');
 
-      if (list) {
-        list.replaceChildren();
-
-        const empty = document.createElement('div');
-        empty.className = 'empty-events';
-        empty.textContent =
-          'Activity history could not be loaded from the API.';
-
-        list.append(empty);
+      if (!result.ok) {
+        throw new Error(
+          result.message || 'Event history unavailable.'
+        );
       }
 
-      console.warn('Event log unavailable:', error.message);
+      renderEvents(result.data);
+
+      return arrayValue(result.data);
+    } catch (error) {
+      console.error('[IntelliLink] Events error:', error);
+      return [];
     }
   }
 
-  async function loadDevice() {
+  // ==========================================
+  // LOAD DEVICE STATUS
+  // ==========================================
+
+  async function loadDeviceStatus() {
     try {
-      const raw = objectValue(
-        await api(`${API}/device`, 10000),
-        ['device', 'result', 'data']
+      const result = await apiRequest('/api/v1/status');
+
+      if (!result.ok) {
+        throw new Error(
+          result.message || 'Device status unavailable.'
+        );
+      }
+
+      const data = objectValue(
+        result.data,
+        ['status', 'device', 'data', 'result']
       );
 
-      // Do not invent CPU, temperature or other hardware metrics.
-      const miniName = $('.device-mini > strong');
+      state.deviceStatus = data;
 
-      if (miniName) {
-        miniName.textContent = firstValue(
-          raw.product_name,
-          raw.device_name,
-          raw.model_number,
-          'IntelliLink X1 device'
-        );
-      }
+      setText(
+        '#deviceName',
+        firstValue(
+          data.device_name,
+          data.name,
+          'IntelliLink X1'
+        )
+      );
 
-      const info = $$('.device-mini-foot b');
+      setText(
+        '#deviceStatus',
+        firstValue(
+          data.status,
+          data.state,
+          'Connected to API'
+        )
+      );
 
-      info.forEach(node => {
-        node.textContent = 'N/A';
-      });
+      setText(
+        '#deviceTemperature',
+        data.temperature_c === null ||
+        data.temperature_c === undefined
+          ? 'N/A'
+          : `${data.temperature_c}°C`
+      );
 
-      const meter = $('.device-meter span');
+      setText(
+        '#deviceCpu',
+        data.cpu_percent === null ||
+        data.cpu_percent === undefined
+          ? 'N/A'
+          : `${data.cpu_percent}%`
+      );
 
-      if (meter) {
-        meter.style.width = '0%';
-      }
-
-      const version = $('.sidebar-footer .version');
-
-      if (version && raw.software_version) {
-        version.textContent = `v${raw.software_version}`;
-      }
+      return data;
     } catch (error) {
-      console.warn('Device data unavailable:', error.message);
+      console.error('[IntelliLink] Device status error:', error);
+      return null;
     }
   }
 
-  async function refreshDashboard(showNotice = false) {
-    const button = $('#refreshBtn');
-    if (button) button.disabled = true;
+  // ==========================================
+  // REFRESH ALL LIVE DATA
+  // ==========================================
 
-    const refreshSymbol = $('.refresh-symbol');
+  async function refreshDashboard(showMessage = true) {
+    if (state.refreshing) return;
 
-    if (refreshSymbol) {
-      refreshSymbol.classList.add('is-loading');
+    state.refreshing = true;
+
+    const refreshButton = $('#refreshBtn');
+
+    if (refreshButton) {
+      refreshButton.disabled = true;
+      refreshButton.setAttribute('aria-busy', 'true');
     }
 
     try {
-      const results = await Promise.allSettled([
-        api(`${API}/network/snapshot`, 20000),
-        api(`${API}/network/score`, 12000),
-        api(`${API}/dashboard`, 12000)
-      ]);
-
-      let snapshot = null;
-      let score = null;
-
-      const snapResult = results[0];
-
-      if (snapResult.status === 'fulfilled') {
-        snapshot = snapResult.value;
-      }
-
-      const scoreResult = results[1];
-
-      if (scoreResult.status === 'fulfilled') {
-        score = scoreResult.value;
-      }
-
-      const dashboardResult = results[2];
-
-      if (dashboardResult.status === 'fulfilled') {
-        state.dashboard = objectValue(
-          dashboardResult.value,
-          ['dashboard', 'data', 'result']
-        );
-      }
-
-      if (!snapshot && !score) {
-        const failed = results.find(result => result.status === 'rejected');
-
-        throw new Error(
-          failed?.reason?.message ||
-          'No network data was returned by the API.'
-        );
-      }
-
-      applySnapshot(snapshot || {}, score);
-
-      if (showNotice) {
-        showToast(
-          'Dashboard refreshed from API readings. Missing metrics remain N/A.'
-        );
-      }
-
       await Promise.allSettled([
-        loadHistory(),
-        loadEvents()
+        loadDashboard(),
+        loadNetworkSnapshot(),
+        loadConnectionScore(),
+        loadNetworkHistory(
+          $('#chartRange')?.value || '1h'
+        ),
+        loadEvents(),
+        loadDeviceStatus()
       ]);
 
-      return true;
-    } catch (error) {
-      setSystemStatus(false, 'API UNAVAILABLE');
+      setUpdated();
 
-      if (showNotice) {
-        showToast(`Refresh failed: ${error.message}`);
+      if (showMessage) {
+        showToast('Dashboard imesasishwa kutoka kwenye API.');
       }
-
-      console.error('Dashboard refresh failed:', error);
-
-      return false;
     } finally {
-      if (button) button.disabled = false;
+      state.refreshing = false;
 
-      if (refreshSymbol) {
-        refreshSymbol.classList.remove('is-loading');
+      if (refreshButton) {
+        refreshButton.disabled = false;
+        refreshButton.removeAttribute('aria-busy');
       }
     }
   }
 
-  function finishOverlay() {
-    const overlay = $('#testOverlay');
+  // ==========================================
+  // SPEED TEST
+  // ==========================================
 
-    if (overlay) {
-      overlay.hidden = true;
+  async function runSpeedTest() {
+    if (state.speedTestRunning) {
+      return;
     }
 
-    state.running = false;
+    state.speedTestRunning = true;
 
-    const button = $('#runTestBtn');
+    const button = $('#runSpeedTestBtn') || $('#speedTestBtn');
 
     if (button) {
-      button.disabled = false;
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
     }
-  }
-
-  async function runDiagnostic() {
-    if (state.running) return;
-
-    state.running = true;
 
     const overlay = $('#testOverlay');
 
@@ -1033,152 +1020,342 @@
       overlay.hidden = false;
     }
 
-    const button = $('#runTestBtn');
-
-    if (button) {
-      button.disabled = true;
-    }
-
-    setText('#testTitle', 'Running live diagnostics');
+    setText('#testTitle', 'Testing connection speed');
 
     setText(
       '#testDescription',
-      'Requesting a diagnostic report from the connected API. Displayed measurements will come from the response.'
+      'Inapima latency kupitia IntelliLink API. Download na upload zitaonyeshwa tu API ikizirudisha.'
     );
+
+    setText('#testPercent', 'Working…');
+    setText('#testStep', 'Measuring latency');
 
     const progressBar = $('#testProgressBar');
 
     if (progressBar) {
-      progressBar.style.width = '20%';
+      progressBar.style.width = '35%';
     }
 
-    setText('#testPercent', '20%');
-    setText('#testStep', 'Contacting API');
-
-    state.cancelRequested = false;
-
-    const abortController = new AbortController();
-    state.requestController = abortController;
-
     try {
-      if (progressBar) {
-        progressBar.style.width = '45%';
-      }
-
-      setText('#testPercent', '45%');
-      setText('#testStep', 'Collecting host/probe diagnostics');
-
-      // The current FastAPI app uses GET for this endpoint.
-      const diagnostic = await api(
-        `${API}/diagnostics`,
-        20000,
-        abortController.signal
+      const result = await apiRequest(
+        '/api/v1/speed-test',
+        {
+          method: 'POST'
+        }
       );
 
-      if (progressBar) {
-        progressBar.style.width = '78%';
+      if (!result.ok) {
+        throw new Error(
+          result.message || 'Speed test failed.'
+        );
       }
 
-      setText('#testPercent', '78%');
-      setText('#testStep', 'Updating latest network measurements');
+      const data = objectValue(
+        result.data,
+        ['result', 'speed_test', 'data']
+      );
 
-      await refreshDashboard(false);
+      state.lastSpeedTest = data;
+
+      const latency = numeric(firstValue(
+        data.latency_ms,
+        data.latency,
+        data.ping_ms
+      ));
+
+      const download = numeric(firstValue(
+        data.download_mbps,
+        data.download_speed_mbps,
+        data.download
+      ));
+
+      const upload = numeric(firstValue(
+        data.upload_mbps,
+        data.upload_speed_mbps,
+        data.upload
+      ));
+
+      const loss = numeric(firstValue(
+        data.packet_loss_percent,
+        data.packet_loss,
+        data.loss_percent
+      ));
+
+      setText(
+        '#latencyValue',
+        latency === null ? null : formattedNumber(latency, 1)
+      );
+
+      setText(
+        '#downloadValue',
+        download === null ? null : formattedNumber(download, 1)
+      );
+
+      setText(
+        '#uploadValue',
+        upload === null ? null : formattedNumber(upload, 1)
+      );
+
+      setText(
+        '#lossValue',
+        loss === null ? null : formattedNumber(loss, 2)
+      );
 
       if (progressBar) {
         progressBar.style.width = '100%';
       }
 
       setText('#testPercent', '100%');
-      setText('#testStep', 'Report received');
-
-      const result = objectValue(
-        diagnostic,
-        ['diagnostics', 'result', 'data']
-      );
-
-      const status = firstValue(
-        result.status,
-        result.diagnostic_status,
-        result.internet_status ? 'PASS' : 'LIMITED',
-        'COMPLETED'
-      );
+      setText('#testStep', 'Test completed');
 
       addEvent(
-        'Diagnostics completed',
-        firstValue(result.message, `API report status: ${status}`),
-        String(status).toLowerCase() === 'pass' ? 'success' : 'warn',
-        firstValue(result.timestamp, result.created_at)
+        'Speed test completed',
+        `Latency: ${latency === null ? 'N/A' : `${latency} ms`}; download: ${download === null ? 'N/A' : `${download} Mbps`}`,
+        'success'
       );
 
       showToast(
-        firstValue(result.message, `Diagnostics response received (${status}).`)
+        download === null
+          ? 'Latency test imekamilika. Download speed haijarudishwa na API.'
+          : `Speed test imekamilika: ${download} Mbps download.`
       );
+
+      setUpdated();
+
+      return data;
     } catch (error) {
-      if (!state.cancelRequested) {
-        setText('#testTitle', 'Diagnostics unavailable');
+      console.error('[IntelliLink] Speed test error:', error);
 
-        setText(
-          '#testDescription',
-          error.message || 'Could not retrieve a diagnostic report.'
-        );
+      addEvent(
+        'Speed test failed',
+        error.message || 'Unable to complete speed test.',
+        'warn'
+      );
 
-        setText('#testStep', 'API request failed');
-        setText('#testPercent', '—');
+      showToast(
+        'Speed test imeshindwa. Hakikisha API inapatikana.'
+      );
 
-        addEvent(
-          'Diagnostics failed',
-          error.message || 'The API did not return a diagnostic report.',
-          'warn'
-        );
-
-        showToast(`Diagnostics failed: ${error.message}`);
-      }
+      return null;
     } finally {
-      state.requestController = null;
+      state.speedTestRunning = false;
 
-      if (!state.cancelRequested) {
-        setTimeout(finishOverlay, 700);
-      } else {
-        finishOverlay();
+      if (button) {
+        button.disabled = false;
+        button.removeAttribute('aria-busy');
+      }
+
+      if (overlay) {
+        overlay.hidden = true;
       }
     }
   }
+  // ==========================================
+  // SPLASH SCREEN
+  // ==========================================
 
-  function cancelDiagnostic() {
-    if (!state.running) return;
+  function setupSplashScreen() {
+    const splash = $('#splashScreen');
 
-    state.running = false;
-    state.cancelRequested = true;
+    if (!splash) return;
 
-    if (state.requestController) {
-      state.requestController.abort();
-    }
+    document.body.classList.add('splash-active');
 
-    state.requestController = null;
+    const finishSplash = () => {
+      splash.classList.add('splash-exit');
+      document.body.classList.remove('splash-active');
 
-    finishOverlay();
+      setTimeout(() => {
+        splash.hidden = true;
+        splash.setAttribute('aria-hidden', 'true');
+      }, 650);
+    };
 
-    showToast(
-      'Diagnostic view closed. The backend request may finish if the server already received it.'
+    // Respect reduced-motion accessibility preferences.
+    const reducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    setTimeout(
+      finishSplash,
+      reducedMotion ? 500 : 2400
     );
   }
 
-  function updateChartRange(range) {
-    if (!['1h', '24h', '7d'].includes(range)) return;
+  // ==========================================
+  // SPEED TEST NOTIFICATION SOUND
+  // ==========================================
 
-    state.chartRange = range;
-    state.history = extractHistory(state.history);
+  function playNotificationSound() {
+    /*
+     * Browser security does not allow a website to copy
+     * Samsung's proprietary ringtone automatically.
+     *
+     * This generates a short original electronic notification
+     * tone. A licensed audio file can be used instead.
+     */
 
-    renderChart(state.history);
+    try {
+      const AudioContextClass =
+        window.AudioContext || window.webkitAudioContext;
 
-    const labels = {
-      '1h': 'last hour',
-      '24h': 'last 24 hours',
-      '7d': 'last 7 days'
-    };
+      if (!AudioContextClass) return;
 
-    showToast(`Showing stored readings for the ${labels[range]}.`);
+      if (!state.audioContext) {
+        state.audioContext = new AudioContextClass();
+      }
+
+      const context = state.audioContext;
+
+      if (context.state === 'suspended') {
+        context.resume().catch(() => {});
+      }
+
+      const playTone = (frequency, startTime, duration) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(
+          frequency,
+          startTime
+        );
+
+        gain.gain.setValueAtTime(0.0001, startTime);
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.12,
+          startTime + 0.025
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          startTime + duration
+        );
+
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration + 0.03);
+      };
+
+      const now = context.currentTime;
+
+      playTone(880, now, 0.13);
+      playTone(1174.66, now + 0.16, 0.2);
+    } catch (error) {
+      console.warn(
+        '[IntelliLink] Notification sound unavailable:',
+        error
+      );
+    }
   }
+
+  // ==========================================
+  // SOUND SETTINGS
+  // ==========================================
+
+  function setupSoundSettings() {
+    let enabled = true;
+
+    try {
+      const saved = localStorage.getItem(
+        'intellilink-sound-enabled'
+      );
+
+      if (saved !== null) {
+        enabled = saved === 'true';
+      }
+    } catch (_) {
+      // Storage may be disabled.
+    }
+
+    state.soundEnabled = enabled;
+
+    const toggle = $('#soundToggle');
+
+    if (toggle) {
+      toggle.checked = enabled;
+
+      toggle.addEventListener('change', () => {
+        state.soundEnabled = toggle.checked;
+
+        try {
+          localStorage.setItem(
+            'intellilink-sound-enabled',
+            String(state.soundEnabled)
+          );
+        } catch (_) {
+          // Ignore unavailable browser storage.
+        }
+
+        showToast(
+          state.soundEnabled
+            ? 'Notification sound enabled.'
+            : 'Notification sound disabled.'
+        );
+      });
+    }
+  }
+
+  // ==========================================
+  // CHART RANGE
+  // ==========================================
+
+  function setupChartRange() {
+    const selector = $('#chartRange');
+
+    if (!selector) return;
+
+    selector.addEventListener('change', async () => {
+      await loadNetworkHistory(selector.value);
+    });
+  }
+
+  // ==========================================
+  // THEME
+  // ==========================================
+
+  function setupTheme() {
+    let savedTheme = 'dark';
+
+    try {
+      savedTheme = localStorage.getItem(
+        'intellilink-theme'
+      ) || 'dark';
+    } catch (_) {
+      // Use default theme.
+    }
+
+    document.body.classList.toggle(
+      'light-theme',
+      savedTheme === 'light'
+    );
+
+    $('#themeToggle')?.addEventListener('click', () => {
+      const isLight = document.body.classList.toggle(
+        'light-theme'
+      );
+
+      const theme = isLight ? 'light' : 'dark';
+
+      try {
+        localStorage.setItem(
+          'intellilink-theme',
+          theme
+        );
+      } catch (_) {
+        // Ignore unavailable storage.
+      }
+
+      showToast(`${theme} theme enabled.`);
+    });
+  }
+
+  // ==========================================
+  // NAVIGATION
+  // ==========================================
 
   function setupNavigation() {
     const titleMap = {
@@ -1189,12 +1366,12 @@
       settings: 'Settings'
     };
 
-    const targets = {
+    const targetMap = {
       dashboard: '#dashboard',
       monitor: '#monitor',
       diagnostics: '#diagnostics',
       history: '#history',
-      settings: '#settingsPanel'
+      settings: '#settings'
     };
 
     $$('.nav-link').forEach(link => {
@@ -1209,568 +1386,182 @@
 
         setText('#pageTitle', titleMap[view] || 'Overview');
 
-        const target = targets[view] ? $(targets[view]) : null;
+        const target = $(targetMap[view]);
 
         if (target) {
           target.scrollIntoView({
             behavior: 'smooth',
             block: 'start'
           });
-        }
-
-        if (view === 'settings') {
-          showToast('Settings are not served by the current API yet.');
+        } else {
+          showToast(
+            'Sehemu hii haijapatikana kwenye index.html.'
+          );
         }
 
         $('#sidebar')?.classList.remove('open');
       });
     });
-  }
 
-  function setupTheme() {
-    let saved = null;
-
-    try {
-      saved = localStorage.getItem('intellilink-theme');
-    } catch (_) {
-      // Browser storage may be blocked.
-    }
-
-    if (saved === 'light') {
-      document.body.classList.add('light-theme');
-    }
-
-    $('#themeToggle')?.addEventListener('click', () => {
-      document.body.classList.toggle('light-theme');
-
-      const theme = document.body.classList.contains('light-theme')
-        ? 'light'
-        : 'dark';
-
-      try {
-        localStorage.setItem('intellilink-theme', theme);
-      } catch (_) {
-        // Browser storage may be blocked.
-      }
-
-      showToast(`${theme === 'light' ? 'Light' : 'Dark'} theme enabled.`);
+    $('#menuToggle')?.addEventListener('click', () => {
+      $('#sidebar')?.classList.toggle('open');
     });
   }
 
-  function setupNetworkRows() {
-    $$('.network-row').forEach(row => {
-      row.tabIndex = 0;
-      row.setAttribute('role', 'button');
-      row.setAttribute('aria-pressed', 'false');
-
-      const choose = () => {
-        const selected = row.dataset.network;
-        const actual = currentMetrics().network;
-
-        if (actual && selected === actual) {
-          showToast(
-            `${selected} is the network type reported by this API source.`
-          );
-        } else {
-          showToast(
-            `${selected} cannot be activated from the dashboard. A compatible network probe must report this source first.`
-          );
-        }
-      };
-
-      row.addEventListener('click', choose);
-
-      row.addEventListener('keydown', event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          choose();
-        }
-      });
-    });
-  }
-
-  function setupSimProfile() {
-    const form = $('#simProfileForm');
-    const phone = $('#simPhone');
-    const carrier = $('#simCarrier');
-    const message = $('#simMessage');
-
-    if (!form || !phone || !carrier || !message) return;
-
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem('intellilink-sim-profile') || 'null'
-      );
-
-      if (saved && typeof saved === 'object') {
-        carrier.value = typeof saved.carrier === 'string'
-          ? saved.carrier
-          : '';
-
-        phone.value = typeof saved.phone === 'string'
-          ? saved.phone
-          : '';
-
-        message.textContent =
-          'SIM profile saved locally. Live modem telemetry is not connected by this form.';
-      }
-    } catch (_) {
-      message.textContent =
-        'Browser storage unavailable; SIM profile will not persist.';
-    }
-
-    form.addEventListener('submit', event => {
-      event.preventDefault();
-
-      const number = phone.value.trim();
-
-      if (number && !/^\+?[0-9 ()-]{7,18}$/.test(number)) {
-        message.textContent =
-          'Check the phone number format, or leave it blank.';
-
-        phone.focus();
-        return;
-      }
-
-      try {
-        localStorage.setItem(
-          'intellilink-sim-profile',
-          JSON.stringify({
-            carrier: carrier.value,
-            phone: number
-          })
-        );
-
-        message.textContent =
-          'SIM profile saved on this device only. This does not activate or verify the SIM connection.';
-
-        showToast(
-          'SIM profile saved locally; no phone number was sent to the server.'
-        );
-      } catch (_) {
-        message.textContent =
-          'Could not save in this browser. You can still use the dashboard without a SIM profile.';
-      }
-    });
-  }
+  // ==========================================
+  // EVENT BINDINGS
+  // ==========================================
 
   function bindEvents() {
-    setupNetworkRows();
-
-    $('#runTestBtn')?.addEventListener('click', runDiagnostic);
-
-    $('#refreshBtn')?.addEventListener('click', () => {
-      refreshDashboard(true);
+    // Refresh dashboard.
+    $('#refreshBtn')?.addEventListener('click', async () => {
+      await refreshDashboard(true);
     });
 
-    $('#cancelTest')?.addEventListener('click', cancelDiagnostic);
+    // Run diagnostic.
+    $('#runTestBtn')?.addEventListener('click', async () => {
+      if (state.running) return;
 
-    $('#chartRange')?.addEventListener('change', event => {
-      updateChartRange(event.target.value);
+      state.running = true;
+
+      const overlay = $('#testOverlay');
+
+      if (overlay) {
+        overlay.hidden = false;
+      }
+
+      setText('#testTitle', 'Running diagnostics');
+      setText(
+        '#testDescription',
+        'Collecting measurements available from the IntelliLink API.'
+      );
+      setText('#testStep', 'Requesting network snapshot');
+      setText('#testPercent', 'Working…');
+
+      const bar = $('#testProgressBar');
+
+      if (bar) {
+        bar.style.width = '30%';
+      }
+
+      try {
+        await loadNetworkSnapshot();
+        await loadConnectionScore();
+
+        if (bar) {
+          bar.style.width = '100%';
+        }
+
+        setText('#testPercent', '100%');
+        setText('#testStep', 'Diagnostics completed');
+
+        addEvent(
+          'Diagnostics completed',
+          'Measurements updated from the API.',
+          'success'
+        );
+
+        showToast('Diagnostics completed.');
+      } catch (error) {
+        addEvent(
+          'Diagnostics failed',
+          error.message || 'Could not complete diagnostics.',
+          'warn'
+        );
+      } finally {
+        state.running = false;
+
+        setTimeout(() => {
+          if (overlay) {
+            overlay.hidden = true;
+          }
+        }, 700);
+      }
     });
 
+    // Run speed test.
+    const speedButton =
+      $('#runSpeedTestBtn') || $('#speedTestBtn');
+
+    speedButton?.addEventListener('click', async () => {
+      if (state.soundEnabled) {
+        playNotificationSound();
+      }
+
+      await runSpeedTest();
+    });
+
+    // Cancel test overlay.
+    $('#cancelTest')?.addEventListener('click', () => {
+      state.running = false;
+
+      if ($('#testOverlay')) {
+        $('#testOverlay').hidden = true;
+      }
+
+      showToast('Diagnostic cancelled.');
+    });
+
+    // Clear event list.
     $('#clearEvents')?.addEventListener('click', () => {
       const list = $('#eventList');
+
       if (!list) return;
 
       list.replaceChildren();
 
       const empty = document.createElement('div');
-      empty.className = 'empty-events';
 
-      empty.textContent =
-        'Activity log cleared in this view. Stored server events were not deleted.';
+      empty.className = 'empty-events';
+      empty.textContent = 'No events to display.';
 
       list.append(empty);
 
-      showToast(
-        'Cleared the event list in this browser view. Database history was not deleted.'
-      );
+      showToast('Activity log cleared on this page.');
     });
 
+    // Dismiss prototype banner.
     $('#dismissBanner')?.addEventListener('click', () => {
       $('.demo-banner')?.remove();
     });
 
-    $('#viewAllNetworks')?.addEventListener('click', () => {
-      showToast(
-        'The dashboard does not switch radio networks. Rows are updated only when the API reports matching telemetry.'
-      );
-    });
-
-    $('#menuToggle')?.addEventListener('click', () => {
-      $('#sidebar')?.classList.toggle('open');
-    });
-
-    document.addEventListener('click', event => {
-      const sidebar = $('#sidebar');
-
-      if (
-        sidebar?.classList.contains('open') &&
-        !sidebar.contains(event.target) &&
-        !$('#menuToggle')?.contains(event.target)
-      ) {
-        sidebar.classList.remove('open');
-      }
-    });
-
+    // Escape closes overlay.
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && state.running) {
-        cancelDiagnostic();
-      }
-    });
-  }
+        state.running = false;
 
-  // Visitor-side probe: each visitor measures their own browser-to-API route.
-  // It is NOT SIM-radio latency, carrier signal, or a full speed test.
-  async function testBrowserConnection(showNotice = false) {
-    if (state.visitorProbeRunning) return null;
-
-    state.visitorProbeRunning = true;
-
-    const button = $('#testBrowserConnection');
-    const badge = $('#browserProbeBadge');
-    const startedAt = new Date();
-    const samples = [];
-
-    const connection =
-      navigator.connection ||
-      navigator.mozConnection ||
-      navigator.webkitConnection;
-
-    if (button) {
-      button.disabled = true;
-      button.textContent = 'Testing connection…';
-    }
-
-    if (badge) {
-      badge.textContent = 'TESTING';
-    }
-
-    setText(
-      '#browserOnline',
-      navigator.onLine ? 'Online' : 'Offline'
-    );
-
-    setText(
-      '#browserOnlineDetail',
-      navigator.onLine
-        ? 'Running browser-to-API checks'
-        : 'Browser reports offline'
-    );
-
-    setText(
-      '#browserType',
-      connection
-        ? firstValue(connection.effectiveType, connection.type, 'Unknown')
-        : 'Not exposed'
-    );
-
-    setText(
-      '#browserNetworkHint',
-      connection?.effectiveType
-        ? `Browser estimate: ${connection.effectiveType}`
-        : 'This browser does not expose a network class'
-    );
-
-    setText(
-      '#browserDownlink',
-      numeric(connection?.downlink) === null
-        ? '—'
-        : Number(connection.downlink).toFixed(1)
-    );
-
-    setText('#browserRtt', '…');
-    setText('#browserRttDetail', 'Running 5 requests');
-
-    try {
-      if (!navigator.onLine) {
-        throw new Error('This browser reports that it is offline.');
-      }
-
-      // Five sequential requests give this visitor an estimate of API response time.
-      for (let i = 0; i < 5; i += 1) {
-        const requestStarted = performance.now();
-
-        await api(`${API_ROOT}/health`, 5000);
-
-        samples.push(
-          Math.max(0, performance.now() - requestStarted)
-        );
-
-        if (i < 4) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+        if ($('#testOverlay')) {
+          $('#testOverlay').hidden = true;
         }
       }
-
-      const rounded = samples.map(value => Math.round(value));
-
-      const average = samples.reduce(
-        (sum, value) => sum + value,
-        0
-      ) / samples.length;
-
-      const best = Math.min(...samples);
-      const worst = Math.max(...samples);
-
-      const variations = samples
-        .slice(1)
-        .map((value, index) => Math.abs(value - samples[index]));
-
-      const variation = variations.length
-        ? variations.reduce((sum, value) => sum + value, 0) / variations.length
-        : 0;
-
-      setText('#browserRtt', Math.round(average));
-
-      setText(
-        '#browserRttDetail',
-        `Best ${Math.round(best)} ms · worst ${Math.round(worst)} ms · variation ${Math.round(variation)} ms`
-      );
-
-      setText('#browserOnline', 'Reachable');
-
-      setText(
-        '#browserOnlineDetail',
-        'IntelliLink API responded to all 5 probes'
-      );
-
-      if (badge) {
-        badge.textContent = 'API REACHABLE';
-      }
-
-      setText(
-        '#browserProbeUpdated',
-        `Last tested ${startedAt.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        })}. Results are for this browser only.`
-      );
-
-      if (showNotice) {
-        showToast(
-          `Your browser reached IntelliLink in an average of ${Math.round(average)} ms. This is API round-trip time, not SIM-radio latency.`
-        );
-      }
-
-      return {
-        average_ms: Number(average.toFixed(2)),
-        best_ms: Number(best.toFixed(2)),
-        worst_ms: Number(worst.toFixed(2)),
-        variation_ms: Number(variation.toFixed(2)),
-        probes: rounded
-      };
-    } catch (error) {
-      setText(
-        '#browserRtt',
-        samples.length
-          ? Math.round(
-              samples.reduce((sum, value) => sum + value, 0) /
-              samples.length
-            )
-          : '—'
-      );
-
-      setText(
-        '#browserRttDetail',
-        samples.length
-          ? `${samples.length}/5 probes succeeded; partial reading`
-          : 'No successful API probes'
-      );
-
-      setText(
-        '#browserOnline',
-        navigator.onLine
-          ? (samples.length ? 'Partially reachable' : 'API error')
-          : 'Offline'
-      );
-
-      setText(
-        '#browserOnlineDetail',
-        error.message || 'Could not reach API'
-      );
-
-      if (badge) {
-        badge.textContent = samples.length
-          ? 'PARTIAL'
-          : 'UNREACHABLE';
-      }
-
-      setText(
-        '#browserProbeUpdated',
-        'Probe incomplete. Check internet access and API availability.'
-      );
-
-      if (showNotice) {
-        showToast(
-          'IntelliLink API could not complete the browser connection test.'
-        );
-      }
-
-      return null;
-    } finally {
-      state.visitorProbeRunning = false;
-
-      if (button) {
-        button.disabled = false;
-        button.textContent = 'Test this connection';
-      }
-    }
+    });
   }
 
+  // ==========================================
+  // INITIALISE APPLICATION
+  // ==========================================
+
   async function init() {
-    setupNavigation();
+    setupSplashScreen();
+    setupSoundSettings();
     setupTheme();
-    setupSimProfile();
+    setupNavigation();
+    setupChartRange();
     bindEvents();
 
-    $('#testBrowserConnection')?.addEventListener('click', () => {
-      testBrowserConnection(true);
-    });
+    setUpdated();
 
-    window.addEventListener('online', () => {
-      setText('#browserOnline', 'Online');
-      testBrowserConnection(false);
-    });
+    // Do not invent network values while waiting for the API.
+    setText('#healthScore', null);
+    setText('#gaugeScore', null);
+    setText('#latencyValue', null);
+    setText('#downloadValue', null);
+    setText('#lossValue', null);
+    setText('#stabilityValue', null);
+    setText('#responsivenessValue', null);
+    setText('#throughputValue', null);
 
-    window.addEventListener('offline', () => {
-      setText('#browserOnline', 'Offline');
-      setText('#browserOnlineDetail', 'Browser reports offline');
-      setText('#browserRtt', '—');
-
-      if ($('#browserProbeBadge')) {
-        $('#browserProbeBadge').textContent = 'OFFLINE';
-      }
-    });
-
-    // Re-test periodically while the page is visible to monitor each visitor's API route.
-    window.setInterval(() => {
-      if (
-        document.visibilityState === 'visible' &&
-        navigator.onLine &&
-        !state.visitorProbeRunning
-      ) {
-        testBrowserConnection(false);
-      }
-    }, 60000);
-
-    const splash = $('#splashScreen');
-
-    if (splash) {
-      window.setTimeout(() => {
-        splash.classList.add('splash-hidden');
-
-        window.setTimeout(() => {
-          splash.remove();
-        }, 700);
-      }, 1900);
-    }
-
-    setSystemStatus(false, 'CONNECTING TO API');
-
-    // Clear all example numbers before waiting for actual API responses.
-    [
-      '#healthScore',
-      '#gaugeScore',
-      '#latencyValue',
-      '#downloadValue',
-      '#lossValue',
-      '#stabilityValue',
-      '#responsivenessValue',
-      '#throughputValue'
-    ].forEach(selector => {
-      setText(selector, '—', '—');
-    });
-
-    if ($('#healthBar')) {
-      $('#healthBar').style.width = '0%';
-    }
-
-    if ($('#gaugeProgress')) {
-      $('#gaugeProgress').setAttribute('stroke-dasharray', '0 100');
-    }
-
-    $$('.trend').forEach(node => {
-      node.textContent = 'No baseline';
-      node.classList.remove('trend-good');
-    });
-
-    $$('.sparkline').forEach(node => {
-      node.style.display = 'none';
-    });
-
-    const firstLabel = $$('.metric-card .metric-caption')[0];
-
-    if (firstLabel) {
-      firstLabel.textContent = 'Waiting for API measurements';
-    }
-
-    const disclaimer = $('.chart-disclaimer');
-
-    if (disclaimer) {
-      disclaimer.textContent =
-        'Waiting for stored historical measurements.';
-    }
-
-    // Clear every template/demo value before requesting the backend.
-    updateNetworkRows({});
-
-    updateMiniMetric('#stabilityValue', null);
-    updateMiniMetric('#responsivenessValue', null);
-    updateMiniMetric('#throughputValue', null);
-
-    $$('.recommended-tag').forEach(node => {
-      node.remove();
-    });
-
-    $$('.device-mini-foot b').forEach(node => {
-      node.textContent = 'N/A';
-    });
-
-    const deviceName = $('.device-mini > strong');
-
-    if (deviceName) {
-      deviceName.textContent = 'Waiting for device API';
-    }
-
-    const eventList = $('#eventList');
-
-    if (eventList) {
-      eventList.replaceChildren();
-    }
-
-    renderChart([]);
-
-    try {
-      const health = await api(`${API_ROOT}/health`, 8000);
-
-      const healthy =
-        String(firstValue(health.status, health.health, '')).toLowerCase() === 'healthy' ||
-        health.ok === true;
-
-      setSystemStatus(
-        healthy,
-        healthy ? 'API READY' : 'API RESPONDED'
-      );
-    } catch (error) {
-      setSystemStatus(false, 'API UNAVAILABLE');
-
-      console.warn('Health check failed:', error.message);
-    }
-
-    await Promise.allSettled([
-      loadDevice(),
-      refreshDashboard(false),
-      testBrowserConnection(false)
-    ]);
-
-    // Refresh server readings every 30 seconds while the page is visible.
-    window.setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        refreshDashboard(false);
-      }
-    }, 30000);
+    await refreshDashboard(false);
   }
 
   document.addEventListener(
@@ -1778,4 +1569,6 @@
     init,
     { once: true }
   );
+
 })();
+
